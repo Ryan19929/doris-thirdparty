@@ -21,5 +21,6 @@ unittest tests[] = {
         {"testStringReader", testStringReader},
 #ifdef TEST_CONTRIB_LIBS
         {"chinese", testchinese},
+        {"ik", testik},
 #endif
         {"LastTest", NULL}};

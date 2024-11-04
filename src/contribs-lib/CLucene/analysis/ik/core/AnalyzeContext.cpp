@@ -1,0 +1,218 @@
+#include "AnalyzeContext.h"
+
+#include "CLucene/util/CLStreams.h"
+
+CL_NS_USE2(analysis, ik)
+
+AnalyzeContext::AnalyzeContext(std::shared_ptr<Configuration> configuration)
+        : buffer_offset_(0),
+          cursor_(0),
+          available_(0),
+          last_useless_char_num_(0),
+          config_(configuration) {
+    segment_buff_.resize(BUFF_SIZE);
+}
+
+AnalyzeContext::~AnalyzeContext() = default;
+
+void AnalyzeContext::reset() {
+    buffer_locker_.clear();
+    org_lexemes_.clear();
+    available_ = 0;
+    buffer_offset_ = 0;
+    cursor_ = 0;
+    last_useless_char_num_ = 0;
+    typed_runes_.clear();
+    path_map_.clear();
+    results_.clear();
+}
+
+size_t AnalyzeContext::fillBuffer(lucene::util::Reader* reader) {
+    int32_t readCount = 0;
+    if (buffer_offset_ == 0) {
+        readCount = reader->readCopy(segment_buff_.data(), 0, BUFF_SIZE);
+
+        readCount = CharacterUtil::adjustToCompleteChar(segment_buff_.data(), readCount);
+
+        CharacterUtil::processString(segment_buff_.c_str(), readCount, typed_runes_,
+                                     config_->isEnableLowercase());
+    } else {
+        size_t offset = available_ - typed_runes_[cursor_].getNextBytePosition();
+        if (offset > 0) {
+            memmove(segment_buff_.data(),
+                    segment_buff_.data() + typed_runes_[cursor_].getNextBytePosition(), offset);
+            readCount = std::max(
+                    0, reader->readCopy(segment_buff_.data() + offset, 0, BUFF_SIZE - offset));
+            readCount =
+                    CharacterUtil::adjustToCompleteChar(segment_buff_.data() + offset, readCount) +
+                    offset;
+        } else {
+            readCount = std::max(0, reader->readCopy(segment_buff_.data(), 0, BUFF_SIZE));
+            readCount = CharacterUtil::adjustToCompleteChar(segment_buff_.data(), readCount);
+        }
+
+        CharacterUtil::TypedRuneArray().swap(typed_runes_);
+        CharacterUtil::processString(segment_buff_.c_str(), readCount, typed_runes_,
+                                     config_->isEnableLowercase());
+    }
+
+    available_ = readCount;
+    cursor_ = 0;
+    return readCount;
+}
+
+void AnalyzeContext::addLexeme(std::shared_ptr<Lexeme> lexeme) {
+    if (lexeme == nullptr) {
+        return;
+    }
+
+    org_lexemes_.addLexeme(std::move(lexeme));
+}
+
+void AnalyzeContext::addLexemePath(std::unique_ptr<LexemePath> path) {
+    if (path != nullptr) {
+        path_map_[path->getPathBegin()] = std::move(path);
+    }
+}
+
+std::shared_ptr<Lexeme> AnalyzeContext::compound(std::shared_ptr<Lexeme> lexeme) {
+    if (lexeme == nullptr || !config_->isUseSmart()) {
+        return nullptr;
+    }
+
+    if (!results_.empty()) {
+        if (Lexeme::Type::Arabic == lexeme->getType()) {
+            auto nextLexeme = results_.front();
+            bool appendOk = false;
+            if (Lexeme::Type::CNum == nextLexeme->getType()) {
+                appendOk = lexeme->append(*nextLexeme, Lexeme::Type::CNum);
+            } else if (Lexeme::Type::Count == nextLexeme->getType()) {
+                appendOk = lexeme->append(*nextLexeme, Lexeme::Type::CQuan);
+            }
+            if (appendOk) {
+                results_.pop_front();
+            }
+        }
+
+        if (Lexeme::Type::CNum == lexeme->getType() && !results_.empty()) {
+            auto nextLexeme = results_.front();
+            bool appendOk = false;
+            if (Lexeme::Type::Count == nextLexeme->getType()) {
+                appendOk = lexeme->append(*nextLexeme, Lexeme::Type::CQuan);
+            }
+            if (appendOk) {
+                results_.pop_front();
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+bool AnalyzeContext::moveCursor() {
+    if (cursor_ < typed_runes_.size() - 1) {
+        cursor_++;
+        return true;
+    }
+    return false;
+}
+
+void AnalyzeContext::initCursor() {
+    cursor_ = 0;
+    typed_runes_[cursor_].regularize(config_->isEnableLowercase());
+}
+
+bool AnalyzeContext::isBufferConsumed() const {
+    return cursor_ == typed_runes_.size() - 1;
+}
+
+bool AnalyzeContext::needRefillBuffer() const {
+    return !isBufferLocked() && cursor_ < typed_runes_.size() - 1 &&
+           cursor_ > typed_runes_.size() - BUFF_EXHAUST_CRITICAL;
+}
+
+void AnalyzeContext::markBufferOffset() {
+    buffer_offset_ += typed_runes_[cursor_].offset;
+}
+
+void AnalyzeContext::lockBuffer(const std::string& segmenterName) {
+    buffer_locker_.insert(segmenterName);
+}
+
+void AnalyzeContext::unlockBuffer(const std::string& segmenterName) {
+    buffer_locker_.erase(segmenterName);
+}
+
+bool AnalyzeContext::isBufferLocked() const {
+    return !buffer_locker_.empty();
+}
+
+std::shared_ptr<Lexeme> AnalyzeContext::getNextLexeme() {
+    if (results_.empty()) {
+        return nullptr;
+    }
+
+    auto result = results_.front();
+    results_.pop_front();
+
+    while (result) {
+        compound(result);
+        if (Dictionary::getSingleton()->isStopWord(typed_runes_, result->getCharBegin(),
+                                                   result->getCharLength())) {
+            if (results_.empty()) {
+                return nullptr;
+            }
+            result = results_.front();
+            results_.pop_front();
+        } else {
+            result->setText(std::string(segment_buff_.data() + result->getByteBegin(),
+                                        result->getByteLength()));
+            break;
+        }
+    }
+    return result;
+}
+
+void AnalyzeContext::outputToResult() {
+    size_t index = 0;
+    for (; index <= cursor_;) {
+        if (typed_runes_[index].char_type == CharacterUtil::CHAR_USELESS) {
+            index++;
+            last_useless_char_num_++;
+            continue;
+        }
+        last_useless_char_num_ = 0;
+        auto pathIt = path_map_.find(typed_runes_[index].getBytePosition());
+        if (pathIt != path_map_.end()) {
+            auto& path = pathIt->second;
+            auto lexeme = path->pollFirst();
+            while (lexeme) {
+                results_.push_back(lexeme);
+                index = lexeme->getCharEnd() + 1;
+                lexeme = path->pollFirst();
+                if (lexeme != nullptr) {
+                    for (; index < lexeme->getCharBegin(); index++) {
+                        outputSingleCJK(index);
+                    }
+                }
+            }
+        } else {
+            outputSingleCJK(index);
+            index++;
+        }
+    }
+    path_map_.clear();
+}
+
+void AnalyzeContext::outputSingleCJK(size_t index) {
+    if (typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE ||
+        typed_runes_[index].char_type == CharacterUtil::CHAR_OTHER_CJK) {
+        auto newLexeme = std::make_shared<Lexeme>(
+                buffer_offset_, typed_runes_[index].offset, typed_runes_[index].len,
+                typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE
+                        ? Lexeme::Type::CNChar
+                        : Lexeme::Type::OtherCJK,
+                index, index);
+        results_.push_back(std::move(newLexeme));
+    }
+}

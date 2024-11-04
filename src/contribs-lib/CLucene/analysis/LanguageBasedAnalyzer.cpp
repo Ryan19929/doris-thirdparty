@@ -10,6 +10,8 @@
 #include "CLucene/analysis/Analyzers.h"
 #include "CLucene/analysis/cjk/CJKAnalyzer.h"
 #include "CLucene/analysis/jieba/ChineseTokenizer.h"
+#include "CLucene/analysis/ik/IKTokenizer.h"
+#include "CLucene/analysis/ik/dic/Dictionary.h"
 #include "CLucene/analysis/standard/StandardFilter.h"
 #include "CLucene/analysis/standard/StandardTokenizer.h"
 #include "CLucene/snowball/SnowballFilter.h"
@@ -20,6 +22,7 @@ CL_NS_USE2(analysis, cjk)
 CL_NS_USE2(analysis, jieba)
 CL_NS_USE2(analysis, standard)
 CL_NS_USE2(analysis, snowball)
+CL_NS_USE2(analysis, ik)
 
 CL_NS_DEF(analysis)
 
@@ -33,6 +36,12 @@ LanguageBasedAnalyzer::LanguageBasedAnalyzer(const TCHAR *language, bool stem, A
     this->stem = stem;
     this->mode = mode;
     Analyzer::_lowercase = false;
+
+    // 如果是ik分词器，创建默认配置
+    if (_tcscmp(lang, _T("ik")) == 0) {
+        ikConfig = std::make_unique<CL_NS2(analysis,ik)::Configuration>("");
+        ikConfig->setUseSmart(mode == AnalyzerMode::IK_Smart);
+    }
 }
 
 LanguageBasedAnalyzer::~LanguageBasedAnalyzer() {
@@ -77,6 +86,12 @@ void LanguageBasedAnalyzer::initDict(const std::string &dictPath) {
         }
 
         CL_NS2(analysis, jieba)::ChineseTokenizer::init(&chineseDict);
+    } else if (_tcscmp(lang, _T("ik")) == 0) {
+        if (!ikConfig) {
+            ikConfig = std::make_unique<CL_NS2(analysis,ik)::Configuration>("");
+        }
+        ikConfig->setDictPath(dictPath);
+        Dictionary::initial(*ikConfig);
     }
 }
 
@@ -90,9 +105,11 @@ TokenStream *LanguageBasedAnalyzer::reusableTokenStream(const TCHAR * /*fieldNam
         } else if (_tcscmp(lang, _T("chinese")) == 0) {
             streams->tokenStream = _CLNEW CL_NS2(analysis, jieba)::ChineseTokenizer(reader, mode, Analyzer::_lowercase);
             streams->filteredTokenStream = streams->tokenStream;
+        } else if (_tcscmp(lang, _T("ik")) == 0) {
+            streams->tokenStream = _CLNEW CL_NS2(analysis, ik)::IKTokenizer(reader, mode==AnalyzerMode::IK_Smart, Analyzer::_lowercase);
+            streams->filteredTokenStream = streams->tokenStream;
         } else {
             CL_NS(util)::BufferedReader* bufferedReader = reader->__asBufferedReader();
-
             if (bufferedReader == nullptr) {
                 streams->tokenStream = _CLNEW StandardTokenizer(
                         _CLNEW CL_NS(util)::FilteredBufferedReader(reader, false), true);
@@ -116,13 +133,22 @@ TokenStream *LanguageBasedAnalyzer::reusableTokenStream(const TCHAR * /*fieldNam
     return streams->filteredTokenStream;
 }
 
-TokenStream *LanguageBasedAnalyzer::tokenStream(const TCHAR *fieldName, Reader *reader) {
-    TokenStream *ret = nullptr;
+TokenStream* LanguageBasedAnalyzer::tokenStream(const TCHAR* fieldName, Reader* reader) {
+    TokenStream* ret = nullptr;
     if (_tcscmp(lang, _T("cjk")) == 0) {
         ret = _CLNEW CL_NS2(analysis, cjk)::CJKTokenizer(reader);
     } else if (_tcscmp(lang, _T("chinese")) == 0) {
-        ret = _CLNEW CL_NS2(analysis, jieba)::ChineseTokenizer(reader, mode, Analyzer::_lowercase, Analyzer::_ownReader);
-    } else {
+        ret = _CLNEW CL_NS2(analysis, jieba)::ChineseTokenizer(
+                reader, mode, Analyzer::_lowercase, Analyzer::_ownReader);
+    } else if (_tcscmp(lang, _T("ik")) == 0) {
+        if (ikConfig) {
+            ikConfig->setEnableLowercase(Analyzer::_lowercase);
+            ikConfig->setUseSmart(mode == AnalyzerMode::IK_Smart);
+            ret = _CLNEW CL_NS2(analysis, ik)::IKTokenizer(reader, ikConfig);
+        } else {
+            _CLTHROWA(CL_ERR_NullPointer, std::string("no ikConfig for ik tokenizer").c_str());
+        }
+    }else {
         CL_NS(util)::BufferedReader* bufferedReader = reader->__asBufferedReader();
 
         if (bufferedReader == nullptr) {
@@ -141,6 +167,16 @@ TokenStream *LanguageBasedAnalyzer::tokenStream(const TCHAR *fieldName, Reader *
     ret = _CLNEW StopFilter(ret, true, stopSet);
 
     return ret;
+}
+
+
+
+void LanguageBasedAnalyzer::setIKConfiguration(const CL_NS2(analysis,ik)::Configuration& cfg) {
+    if (!ikConfig) {
+        ikConfig = std::make_unique<CL_NS2(analysis,ik)::Configuration>(cfg);
+    } else {
+        *ikConfig = cfg;
+    }
 }
 
 CL_NS_END

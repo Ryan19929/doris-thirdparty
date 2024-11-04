@@ -82,6 +82,35 @@ SET(clucene_contribs_Files
     ./CLucene/snowball/src_c/stem_UTF_8_spanish.c
     ./CLucene/snowball/src_c/stem_UTF_8_swedish.c
     ./CLucene/analysis/jieba/ChineseTokenizer.cpp
+	./CLucene/analysis/ik/dic/Dictionary.cpp
+	./CLucene/analysis/ik/dic/Dictionary.h
+	./CLucene/analysis/ik/dic/DictSegment.cpp
+	./CLucene/analysis/ik/dic/DictSegment.h
+		./CLucene/analysis/ik/cfg/Configuration.h
+		CLucene/analysis/ik/IKTokenizer.cpp
+		CLucene/analysis/ik/IKTokenizer.h
+		CLucene/analysis/ik/core/Lexeme.cpp
+		CLucene/analysis/ik/core/Lexeme.h
+		CLucene/analysis/ik/core/QuickSortSet.cpp
+		CLucene/analysis/ik/core/QuickSortSet.h
+		CLucene/analysis/ik/core/LexemePath.cpp
+		CLucene/analysis/ik/core/LexemePath.h
+		CLucene/analysis/ik/core/IKSegmenter.cpp
+		CLucene/analysis/ik/core/IKSegmenter.h
+		CLucene/analysis/ik/core/CharacterUtil.cpp
+		CLucene/analysis/ik/core/CharacterUtil.h
+		CLucene/analysis/ik/core/ISegmenter.h
+		CLucene/analysis/ik/core/AnalyzeContext.cpp
+		CLucene/analysis/ik/core/AnalyzeContext.h
+		CLucene/analysis/ik/core/CJKSegmenter.cpp
+		CLucene/analysis/ik/core/CJKSegmenter.h
+		CLucene/analysis/ik/core/IKArbitrator.cpp
+		CLucene/analysis/ik/core/IKArbitrator.h
+		CLucene/analysis/ik/core/LetterSegmenter.cpp
+		CLucene/analysis/ik/core/LetterSegmenter.h
+		CLucene/analysis/ik/core/CN_QuantifierSegmenter.cpp
+		CLucene/analysis/ik/core/CN_QuantifierSegmenter.h
+		CLucene/analysis/ik/dic/Hit.hpp
 )
 IF (BUILD_STATIC_LIBRARIES)
 	SET ( clucene_contrib_extra_libs clucene-core-static clucene-shared-static ${EXTRA_LIBS})

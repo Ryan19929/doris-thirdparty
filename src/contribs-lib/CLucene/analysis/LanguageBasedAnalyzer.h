@@ -7,14 +7,19 @@
 #ifndef _lucene_analysis_languagebasedanalyzer_
 #define _lucene_analysis_languagebasedanalyzer_
 
+#include <memory>
 #include "CLucene/analysis/AnalysisHeader.h"
+#include "CLucene/analysis/ik/cfg/Configuration.h"
 
 CL_NS_DEF(analysis)
 
 enum class AnalyzerMode {
     Default,
     All,
-    Search
+    Search,
+    // 新增IK的模式
+    IK_Smart,
+    IK_Max_Word
 };
 
 class CLUCENE_CONTRIBS_EXPORT LanguageBasedAnalyzer : public CL_NS(analysis)::Analyzer {
@@ -37,6 +42,7 @@ class CLUCENE_CONTRIBS_EXPORT LanguageBasedAnalyzer : public CL_NS(analysis)::An
     TCHAR lang[100]{};
     bool stem;
     AnalyzerMode mode{};
+    std::shared_ptr<CL_NS2(analysis,ik)::Configuration> ikConfig;
 
 public:
     explicit LanguageBasedAnalyzer(const TCHAR *language = nullptr, bool stem = true, AnalyzerMode mode = AnalyzerMode::All);
@@ -47,6 +53,7 @@ public:
     void setLanguage(const TCHAR *language);
     void setStem(bool s);
     void setMode(AnalyzerMode m);
+    void setIKConfiguration(const CL_NS2(analysis,ik)::Configuration& cfg);
     void initDict(const std::string &dictPath);
     TokenStream *tokenStream(const TCHAR *fieldName, CL_NS(util)::Reader *reader) override;
     TokenStream *reusableTokenStream(const TCHAR * /*fieldName*/, CL_NS(util)::Reader *reader) override;

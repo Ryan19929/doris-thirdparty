@@ -93,6 +93,7 @@ CuSuite *testGrowableByteArrayDataOutputSuite(void);
 #ifdef TEST_CONTRIB_LIBS
 //CuSuite *testGermanAnalyzer(void);
 CuSuite *testchinese(void);
+CuSuite *testik(void);
 #endif
 
 class English{

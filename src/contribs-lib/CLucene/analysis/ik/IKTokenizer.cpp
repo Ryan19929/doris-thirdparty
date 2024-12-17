@@ -44,8 +44,8 @@ void IKTokenizer::reset(Reader* reader) {
     buffer_.reserve(input->size());
     IKSegmenter segmenter(reader, config_);
 
-    std::shared_ptr<Lexeme> lexeme = nullptr;
-    while ((lexeme = segmenter.next()) != nullptr) {
+    std::optional<Lexeme> lexeme;
+    while (lexeme = segmenter.next()) {
         tokens_text_.emplace_back(lexeme->getText());
     }
 

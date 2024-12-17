@@ -4,31 +4,24 @@
 
 CL_NS_DEF2(analysis, ik)
 
-bool QuickSortSet::Cell::operator<(const Cell& other) const {
-    return *lexeme_ < *other.lexeme_;
-}
 
-bool QuickSortSet::Cell::operator==(const Cell& other) const {
-    return *lexeme_ == *other.lexeme_;
-}
-
-QuickSortSet::QuickSortSet() = default;
 
 QuickSortSet::~QuickSortSet() {
     clear();
 }
 
 void QuickSortSet::clear() {
-    head_.reset();
-    tail_.reset();
+    while (head_) {
+        Cell* next = head_->next_;
+        delete head_;
+        head_ = next;
+    }
+    tail_ = nullptr;
     cell_size_ = 0;
 }
 
-bool QuickSortSet::addLexeme(std::shared_ptr<Lexeme> lexeme) {
-    if (!lexeme) {
-        return false;
-    }
-    auto new_cell = std::make_shared<Cell>(std::move(lexeme));
+bool QuickSortSet::addLexeme(Lexeme lexeme) {
+    auto new_cell = new Cell(std::move(lexeme));
 
     if (cell_size_ == 0) {
         head_ = tail_ = new_cell;
@@ -37,6 +30,7 @@ bool QuickSortSet::addLexeme(std::shared_ptr<Lexeme> lexeme) {
     }
 
     if (*tail_ == *new_cell) {
+        delete new_cell;
         return false;
     }
 
@@ -61,10 +55,11 @@ bool QuickSortSet::addLexeme(std::shared_ptr<Lexeme> lexeme) {
     // 从尾部上逆插入
     auto index = tail_;
     while (index && *index < *new_cell) {
-        index = index->getPrev();
+        index = index->prev_;
     }
 
     if (index && *index == *new_cell) {
+        delete new_cell;
         return false;
     }
 
@@ -82,43 +77,54 @@ bool QuickSortSet::addLexeme(std::shared_ptr<Lexeme> lexeme) {
     return false;
 }
 
-std::shared_ptr<Lexeme> QuickSortSet::peekFirst() {
-    return head_ ? head_->getLexeme() : nullptr;
+const Lexeme* QuickSortSet::peekFirst() const{
+    return head_ ? &head_->lexeme_ : nullptr;
 }
 
-std::shared_ptr<Lexeme> QuickSortSet::pollFirst() {
-    if (!head_) return nullptr;
+std::optional<Lexeme> QuickSortSet::pollFirst() {
+    if (!head_) return std::nullopt;
+    Cell* old_head = head_;
+    Lexeme result = std::move(old_head->getLexeme());
 
-    auto result = head_->getLexeme();
-    auto nextCell = head_->getNext(); // 获取下一个节点的 shared_ptr
-
-    head_ = nextCell;
+    head_ = head_->next_;
     if (head_)
-        head_->prev_.reset();
+        head_->prev_ = nullptr;
     else
-        tail_.reset();
+        tail_ = nullptr;
 
+    delete old_head;
     --cell_size_;
     return result;
 }
 
-std::shared_ptr<Lexeme> QuickSortSet::peekLast() {
-    return tail_ ? tail_->getLexeme() : nullptr;
+const Lexeme* QuickSortSet::peekLast() const {
+    return tail_ ? &tail_->lexeme_ : nullptr;
 }
 
-std::shared_ptr<Lexeme> QuickSortSet::pollLast() {
-    if (!tail_) return nullptr;
-    auto result = tail_->getLexeme();
-    auto prev_cell = tail_->prev_.lock();
+std::optional<Lexeme> QuickSortSet::pollLast() {
+    if (!tail_) return std::nullopt;
+    Cell* old_tail = tail_;
+    Lexeme result = std::move(old_tail->getLexeme());
 
-    tail_ = prev_cell;
+    tail_ = tail_->prev_;
     if (tail_)
-        tail_->next_.reset();
+        tail_->next_ = nullptr;
     else
-        head_.reset();
+        head_ = nullptr;
 
+    delete old_tail;
     --cell_size_;
     return result;
 }
+
+
+size_t QuickSortSet::getPathBegin() const {
+    return head_ ? head_->lexeme_.getByteBegin() : 0;
+}
+
+size_t QuickSortSet::getPathEnd() const {
+    return tail_ ? tail_->lexeme_.getByteBegin() + tail_->lexeme_.getByteLength() : 0;
+}
+
 
 CL_NS_END2

@@ -44,7 +44,7 @@ bool LetterSegmenter::processEnglishLetter(shared_ptr<AnalyzeContext> context) {
         if (context->getCurrentCharType() == CharacterUtil::CHAR_ENGLISH) {
             english_end_ = context->getCursor();
         } else {
-            auto newLexeme = std::make_shared<Lexeme>(
+            Lexeme newLexeme(
                     context->getBufferOffset(), typed_runes[english_start_].offset,
                     english_end_ - english_start_ + 1, Lexeme::Type::English, english_start_, english_end_);
             context->addLexeme(std::move(newLexeme));
@@ -54,7 +54,7 @@ bool LetterSegmenter::processEnglishLetter(shared_ptr<AnalyzeContext> context) {
     }
 
     if (context->isBufferConsumed() && (english_start_ != -1 && english_end_ != -1)) {
-        auto newLexeme = std::make_shared<Lexeme>(
+        Lexeme newLexeme(
                 context->getBufferOffset(), typed_runes[english_start_].offset,
                 english_end_ - english_start_ + 1, Lexeme::Type::English, english_start_, english_end_);
         context->addLexeme(std::move(newLexeme));
@@ -85,7 +85,7 @@ bool LetterSegmenter::processArabicLetter(shared_ptr<AnalyzeContext> context) {
         } else if (context->getCurrentCharType() == CharacterUtil::CHAR_USELESS &&
                    isNumConnector(context->getCurrentChar())) {
         } else {
-            auto newLexeme = std::make_shared<Lexeme>(
+            Lexeme newLexeme(
                     context->getBufferOffset(), typed_runes[arabic_start_].offset,
                     arabic_end_ - arabic_start_ + 1, Lexeme::Type::Arabic, arabic_start_, arabic_end_);
             context->addLexeme(std::move(newLexeme));
@@ -95,7 +95,7 @@ bool LetterSegmenter::processArabicLetter(shared_ptr<AnalyzeContext> context) {
     }
 
     if (context->isBufferConsumed() && (arabic_start_ != -1 && arabic_end_ != -1)) {
-        auto newLexeme = std::make_shared<Lexeme>(
+        Lexeme newLexeme(
                 context->getBufferOffset(), typed_runes[arabic_start_].offset,
                 arabic_end_ - arabic_start_ + 1, Lexeme::Type::Arabic, arabic_start_, arabic_end_);
         context->addLexeme(std::move(newLexeme));
@@ -130,7 +130,7 @@ bool LetterSegmenter::processMixLetter(shared_ptr<AnalyzeContext> context) {
                    isLetterConnector(context->getCurrentChar())) {
             end_ = context->getCursor();
         } else {
-            auto newLexeme = std::make_shared<Lexeme>(context->getBufferOffset(), typed_runes[start_].offset,
+            Lexeme newLexeme(context->getBufferOffset(), typed_runes[start_].offset,
                                            end_ - start_ + 1, Lexeme::Type::Letter, start_, end_);
             context->addLexeme(std::move(newLexeme));
             start_ = -1;
@@ -139,7 +139,7 @@ bool LetterSegmenter::processMixLetter(shared_ptr<AnalyzeContext> context) {
     }
 
     if (context->isBufferConsumed() && (start_ != -1 && end_ != -1)) {
-        auto newLexeme = std::make_shared<Lexeme>(context->getBufferOffset(), typed_runes[start_].offset,
+        Lexeme newLexeme(context->getBufferOffset(), typed_runes[start_].offset,
                                        end_ - start_ + 1, Lexeme::Type::Letter, start_, end_);
         context->addLexeme(std::move(newLexeme));
         start_ = -1;

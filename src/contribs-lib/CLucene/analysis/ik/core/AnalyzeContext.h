@@ -42,12 +42,12 @@ private:
     // LexemePath position index table
     std::map<size_t, std::unique_ptr<LexemePath>> path_map_;
     // Final tokenization result set
-    std::list<std::shared_ptr<Lexeme>> results_;
+    std::list<Lexeme> results_;
     // Tokenizer configuration
     std::shared_ptr<Configuration> config_;
 
     void outputSingleCJK(size_t index);
-    std::shared_ptr<Lexeme> compound(std::shared_ptr<Lexeme> lexeme);
+    void compound(Lexeme& lexeme);
 
 public:
     const CharacterUtil::TypedRuneArray& getTypedRuneArray() const { return typed_runes_; }
@@ -72,9 +72,9 @@ public:
     void unlockBuffer(const std::string& segmenterName);
     bool isBufferLocked() const;
 
-    void addLexeme(std::shared_ptr<Lexeme> lexeme);
+    void addLexeme(Lexeme lexeme);
     void addLexemePath(std::unique_ptr<LexemePath> path);
-    std::shared_ptr<Lexeme> getNextLexeme();
+    std::optional<Lexeme> getNextLexeme();
     QuickSortSet* getOrgLexemes() { return &org_lexemes_; }
     void outputToResult();
 

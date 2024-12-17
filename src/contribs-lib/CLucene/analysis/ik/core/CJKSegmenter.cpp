@@ -16,7 +16,7 @@ void CJKSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
                 Dictionary::getSingleton()->matchWithHit(context->getTypedRuneArray(), context->getCursor(),hit);
 
                 if (hit.isMatch()) {
-                    auto newLexeme = std::make_shared<Lexeme>(context->getBufferOffset(), hit.getByteBegin(),
+                    Lexeme newLexeme(context->getBufferOffset(), hit.getByteBegin(),
                                                  hit.getByteEnd() - hit.getByteBegin(),
                                                  Lexeme::Type::CNWord, hit.getCharBegin(),
                                                  hit.getCharEnd());
@@ -39,8 +39,7 @@ void CJKSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
                 context->getTypedRuneArray(), context->getCursor(), 1);
 
         if (singleCharHit.isMatch()) {
-            auto newLexeme =
-                    std::make_shared<Lexeme>(context->getBufferOffset(), context->getCurrentCharOffset(),
+            Lexeme newLexeme(context->getBufferOffset(), context->getCurrentCharOffset(),
                                context->getCurrentCharLen(), Lexeme::Type::CNChar,
                                singleCharHit.getCharBegin(), singleCharHit.getCharEnd());
             context->addLexeme(std::move(newLexeme));

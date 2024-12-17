@@ -7,7 +7,7 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
     auto org_lexeme = org_lexemes->pollFirst();
     auto cross_path = std::make_unique<LexemePath>();
     while (org_lexeme) {
-        if (!cross_path->addCrossLexeme(org_lexeme)) {
+        if (!cross_path->addCrossLexeme(*org_lexeme)) {
             // Find the next non-intersecting crossPath
             if (cross_path->size() == 1 || !use_smart) {
                 // No ambiguity in crossPath or no ambiguity processing needed
@@ -15,8 +15,7 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
                 context->addLexemePath(std::move(cross_path));
             } else {
                 // Process ambiguity for current crossPath
-                auto headCell = cross_path->getHead();
-                auto judgeResult = judge(headCell, cross_path->getPathLength());
+                auto judgeResult = judge(cross_path->getHead(), cross_path->getPathLength());
 
                 // Output ambiguity processing result
                 context->addLexemePath(std::move(judgeResult));
@@ -24,7 +23,7 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
 
             // Add orgLexeme to new crossPath
             cross_path = std::make_unique<LexemePath>();
-            cross_path->addCrossLexeme(org_lexeme);
+            cross_path->addCrossLexeme(*org_lexeme);
         }
         org_lexeme = org_lexemes->pollFirst();
     }
@@ -42,7 +41,7 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
     }
 }
 
-std::unique_ptr<LexemePath> IKArbitrator::judge(std::shared_ptr<QuickSortSet::Cell> lexeme_cell, size_t full_text_length) {
+std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell, size_t full_text_length) {
     // Path options collection
     std::set<std::unique_ptr<LexemePath>, LexemePath::LexemePathPtrCompare> pathOptions;    // Candidate result path
     auto option = std::make_shared<LexemePath>();
@@ -66,13 +65,13 @@ std::unique_ptr<LexemePath> IKArbitrator::judge(std::shared_ptr<QuickSortSet::Ce
     return std::unique_ptr<LexemePath>((*pathOptions.begin())->copy());
 }
 
-std::stack<std::shared_ptr<QuickSortSet::Cell>>IKArbitrator::forwardPath(
-        std::shared_ptr<QuickSortSet::Cell> lexeme_cell, std::shared_ptr<LexemePath> path_option) {
+std::stack<QuickSortSet::Cell*>IKArbitrator::forwardPath(
+        QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath> path_option) {
     // Stack of conflicting Lexemes
-    std::stack<std::shared_ptr<QuickSortSet::Cell>> conflictStack;
+    std::stack<QuickSortSet::Cell*> conflictStack;
     auto current_cell = lexeme_cell;
 
-    while (current_cell && current_cell->getLexeme() ) {
+    while (current_cell) {
         if (!path_option->addNotCrossLexeme(current_cell->getLexeme())) {
             // Lexeme intersection, if addition fails, push to lexemeStack
             conflictStack.push(current_cell);
@@ -82,7 +81,7 @@ std::stack<std::shared_ptr<QuickSortSet::Cell>>IKArbitrator::forwardPath(
     return conflictStack;
 }
 
-void IKArbitrator::backPath(std::shared_ptr<Lexeme> lexeme, std::shared_ptr<LexemePath> option) {
+void IKArbitrator::backPath(const Lexeme& lexeme, std::shared_ptr<LexemePath> option) {
     while(option->checkCross(lexeme)) {
         option->removeTail();
     }

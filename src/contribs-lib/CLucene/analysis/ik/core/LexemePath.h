@@ -11,10 +11,10 @@ class CLUCENE_EXPORT LexemePath : public QuickSortSet {
 public:
     LexemePath();
 
-    bool addCrossLexeme(const std::shared_ptr<Lexeme>& lexeme);
-    bool addNotCrossLexeme(const std::shared_ptr<Lexeme>& lexeme);
-    std::shared_ptr<Lexeme> removeTail();
-    bool checkCross(const std::shared_ptr<Lexeme>& lexeme) const;
+    bool addCrossLexeme(const Lexeme& lexeme);
+    bool addNotCrossLexeme(const Lexeme& lexeme);
+    std::optional<Lexeme> removeTail();
+    bool checkCross(const Lexeme& lexeme) const;
 
     size_t getPathBegin() const { return path_begin_; }
     size_t getPathEnd() const { return path_begin_; }

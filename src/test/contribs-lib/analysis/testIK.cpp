@@ -67,7 +67,7 @@ void testCJKSegmenter(CuTest* tc) {
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "我");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
@@ -85,10 +85,10 @@ void testCJKSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "研究生");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr3 = "清华大学计算机系";
     context->reset();
@@ -104,12 +104,12 @@ void testCJKSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "清华大学");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "计算机系");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
@@ -126,22 +126,22 @@ void testCJKSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "我");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "的");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "研究生");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "同学");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
@@ -164,7 +164,7 @@ void testLetterSegmenter(CuTest* tc) {
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "B");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::English);
 
@@ -182,16 +182,16 @@ void testLetterSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "Hello");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::English);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "World");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::English);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr3 = "12345";
     context->reset();
@@ -207,11 +207,11 @@ void testLetterSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "12345");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::Arabic);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr4 = "Hello123";
     context->reset();
@@ -227,11 +227,11 @@ void testLetterSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "Hello123");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::Letter);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr5 = "windows2000";
     context->reset();
@@ -247,11 +247,11 @@ void testLetterSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "windows2000");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::Letter);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 }
 
 void testCNQuantifierSegmenter(CuTest* tc) {
@@ -274,21 +274,21 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "三个");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CQuan);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "苹");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "果");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr3 = "我有二十三个苹果";
     context->reset();
@@ -303,31 +303,31 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "我");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "有");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "二十三个");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CQuan);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "苹");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "果");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 }
 
 void testSimpleIKTokenizer(CuTest* tc) {
@@ -344,7 +344,7 @@ void testSimpleIKTokenizer(CuTest* tc) {
     a.initDict("./ik-dict");
     ts = a.tokenStream(_T("contents"), reader.get());
 
-    CLUCENE_ASSERT(ts->next(&t) != NULL);
+    CLUCENE_ASSERT(ts->next(&t) != nullptr);
     CLUCENE_ASSERT(strncmp(t.termBuffer<char>(), "我爱你", t.termLength<char>()) == 0);
 
     CLUCENE_ASSERT(ts->next(&t) != NULL);

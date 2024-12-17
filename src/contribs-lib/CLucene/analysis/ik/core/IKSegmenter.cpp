@@ -20,13 +20,13 @@ std::vector<std::unique_ptr<ISegmenter>> IKSegmenter::loadSegmenters() {
     return segmenters;
 }
 
-std::shared_ptr<Lexeme> IKSegmenter::next() {
-    std::shared_ptr<Lexeme> lexeme = nullptr;
+std::optional<Lexeme> IKSegmenter::next() {
+    std::optional<Lexeme> lexeme = std::nullopt;
     while (!(lexeme = context_->getNextLexeme())) {
         int available = context_->fillBuffer(input_);
         if (available <= 0) {
             context_.reset();
-            return nullptr;
+            return std::nullopt;
         } else {
             context_->initCursor();
             do {

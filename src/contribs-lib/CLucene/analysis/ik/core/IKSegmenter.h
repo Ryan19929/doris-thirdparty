@@ -16,7 +16,7 @@ CL_NS_DEF2(analysis, ik)
 class IKSegmenter {
 public:
     IKSegmenter(lucene::util::Reader* input, std::shared_ptr<Configuration> config);
-    std::shared_ptr<Lexeme> next();
+    std::optional<Lexeme> next();
     void reset(lucene::util::Reader* newInput);
     int getLastUselessCharNum();
 

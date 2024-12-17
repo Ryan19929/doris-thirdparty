@@ -16,7 +16,7 @@ AnalyzeContext::AnalyzeContext(std::shared_ptr<Configuration> configuration)
 AnalyzeContext::~AnalyzeContext() = default;
 
 void AnalyzeContext::reset() {
-    buffer_locker_.clear();
+    buffer_locker_ = 0;
     org_lexemes_.clear();
     available_ = 0;
     buffer_offset_ = 0;
@@ -61,52 +61,48 @@ size_t AnalyzeContext::fillBuffer(lucene::util::Reader* reader) {
     return readCount;
 }
 
-void AnalyzeContext::addLexeme(std::shared_ptr<Lexeme> lexeme) {
-    if (lexeme == nullptr) {
-        return;
-    }
-
+void AnalyzeContext::addLexeme(Lexeme lexeme) {
     org_lexemes_.addLexeme(std::move(lexeme));
 }
 
 void AnalyzeContext::addLexemePath(std::unique_ptr<LexemePath> path) {
-    if (path != nullptr) {
-        path_map_[path->getPathBegin()] = std::move(path);
+    if (path) {
+        auto begin = path->getPathBegin();
+        path_map_.emplace(begin, std::move(path));
     }
 }
 
-std::shared_ptr<Lexeme> AnalyzeContext::compound(std::shared_ptr<Lexeme> lexeme) {
-    if (lexeme == nullptr || !config_->isUseSmart()) {
-        return nullptr;
+void AnalyzeContext::compound(Lexeme& lexeme) {
+    if (!config_->isUseSmart()) {
+        return;
     }
 
     if (!results_.empty()) {
-        if (Lexeme::Type::Arabic == lexeme->getType()) {
-            auto nextLexeme = results_.front();
+        if (Lexeme::Type::Arabic == lexeme.getType()) {
+            auto& nextLexeme = results_.front();
             bool appendOk = false;
-            if (Lexeme::Type::CNum == nextLexeme->getType()) {
-                appendOk = lexeme->append(*nextLexeme, Lexeme::Type::CNum);
-            } else if (Lexeme::Type::Count == nextLexeme->getType()) {
-                appendOk = lexeme->append(*nextLexeme, Lexeme::Type::CQuan);
+            if (Lexeme::Type::CNum == nextLexeme.getType()) {
+                appendOk = lexeme.append(nextLexeme, Lexeme::Type::CNum);
+            } else if (Lexeme::Type::Count == nextLexeme.getType()) {
+                appendOk = lexeme.append(nextLexeme, Lexeme::Type::CQuan);
             }
             if (appendOk) {
                 results_.pop_front();
             }
         }
 
-        if (Lexeme::Type::CNum == lexeme->getType() && !results_.empty()) {
+        if (Lexeme::Type::CNum == lexeme.getType() && !results_.empty()) {
             auto nextLexeme = results_.front();
             bool appendOk = false;
-            if (Lexeme::Type::Count == nextLexeme->getType()) {
-                appendOk = lexeme->append(*nextLexeme, Lexeme::Type::CQuan);
+            if (Lexeme::Type::Count == nextLexeme.getType()) {
+                appendOk = lexeme.append(nextLexeme, Lexeme::Type::CQuan);
             }
             if (appendOk) {
                 results_.pop_front();
             }
         }
     }
-
-    return nullptr;
+    return;
 }
 
 bool AnalyzeContext::moveCursor() {
@@ -136,37 +132,47 @@ void AnalyzeContext::markBufferOffset() {
 }
 
 void AnalyzeContext::lockBuffer(const std::string& segmenterName) {
-    buffer_locker_.insert(segmenterName);
+    if (segmenterName == "CJK_SEGMENTER")
+        buffer_locker_ |= CJK_SEGMENTER_FLAG;
+    else if (segmenterName == "CN_QUANTIFIER")
+        buffer_locker_ |= CN_QUANTIFIER_FLAG;
+    else if (segmenterName == "LETTER_SEGMENTER")
+        buffer_locker_ |= LETTER_SEGMENTER_FLAG;
 }
 
 void AnalyzeContext::unlockBuffer(const std::string& segmenterName) {
-    buffer_locker_.erase(segmenterName);
+    if (segmenterName == "CJK_SEGMENTER")
+        buffer_locker_ &= ~CJK_SEGMENTER_FLAG;
+    else if (segmenterName == "CN_QUANTIFIER")
+        buffer_locker_ &= ~CN_QUANTIFIER_FLAG;
+    else if (segmenterName == "LETTER_SEGMENTER")
+        buffer_locker_ &= ~LETTER_SEGMENTER_FLAG;
 }
 
 bool AnalyzeContext::isBufferLocked() const {
-    return !buffer_locker_.empty();
+    return buffer_locker_ != 0;
 }
 
-std::shared_ptr<Lexeme> AnalyzeContext::getNextLexeme() {
+std::optional<Lexeme> AnalyzeContext::getNextLexeme() {
     if (results_.empty()) {
-        return nullptr;
+        return std::nullopt;
     }
 
-    auto result = results_.front();
+    auto result = std::move(results_.front());
     results_.pop_front();
 
-    while (result) {
+    while (true) {
         compound(result);
-        if (Dictionary::getSingleton()->isStopWord(typed_runes_, result->getCharBegin(),
-                                                   result->getCharLength())) {
+        if (Dictionary::getSingleton()->isStopWord(typed_runes_, result.getCharBegin(),
+                                                   result.getCharLength())) {
             if (results_.empty()) {
-                return nullptr;
+                return std::nullopt;
             }
-            result = results_.front();
+            result = std::move(results_.front());
             results_.pop_front();
         } else {
-            result->setText(std::string(segment_buff_.data() + result->getByteBegin(),
-                                        result->getByteLength()));
+            result.setText(std::string(segment_buff_.data() + result.getByteBegin(),
+                                       result.getByteLength()));
             break;
         }
     }
@@ -174,24 +180,23 @@ std::shared_ptr<Lexeme> AnalyzeContext::getNextLexeme() {
 }
 
 void AnalyzeContext::outputToResult() {
-    size_t index = 0;
-    for (; index <= cursor_;) {
+    for (size_t index = 0; index <= cursor_;) {
         if (typed_runes_[index].char_type == CharacterUtil::CHAR_USELESS) {
             index++;
             last_useless_char_num_++;
             continue;
         }
         last_useless_char_num_ = 0;
-        auto pathIt = path_map_.find(typed_runes_[index].getBytePosition());
-        if (pathIt != path_map_.end()) {
-            auto& path = pathIt->second;
-            auto lexeme = path->pollFirst();
-            while (lexeme) {
-                results_.push_back(lexeme);
+        auto byte_pos = typed_runes_[index].getBytePosition();
+        auto pathIter = path_map_.find(byte_pos);
+        if (pathIter != path_map_.end()) {
+            auto& path = pathIter->second;
+            while (auto lexeme = path->pollFirst()) {
+                results_.push_back(std::move(*lexeme));
                 index = lexeme->getCharEnd() + 1;
-                lexeme = path->pollFirst();
-                if (lexeme != nullptr) {
-                    for (; index < lexeme->getCharBegin(); index++) {
+                auto next_lexeme = path->peekFirst();
+                if (next_lexeme) {
+                    for (; index < next_lexeme->getCharBegin(); index++) {
                         outputSingleCJK(index);
                     }
                 }
@@ -201,18 +206,16 @@ void AnalyzeContext::outputToResult() {
             index++;
         }
     }
-    path_map_.clear();
+    IKUnorderedMap<size_t, std::unique_ptr<LexemePath>>().swap(path_map_);
 }
 
 void AnalyzeContext::outputSingleCJK(size_t index) {
     if (typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE ||
         typed_runes_[index].char_type == CharacterUtil::CHAR_OTHER_CJK) {
-        auto newLexeme = std::make_shared<Lexeme>(
-                buffer_offset_, typed_runes_[index].offset, typed_runes_[index].len,
-                typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE
-                        ? Lexeme::Type::CNChar
-                        : Lexeme::Type::OtherCJK,
-                index, index);
-        results_.push_back(std::move(newLexeme));
+        results_.emplace_back(buffer_offset_, typed_runes_[index].offset, typed_runes_[index].len,
+                              typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE
+                                      ? Lexeme::Type::CNChar
+                                      : Lexeme::Type::OtherCJK,
+                              index, index);
     }
 }

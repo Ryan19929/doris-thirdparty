@@ -1,9 +1,11 @@
 #ifndef CLUCENE_QUICKSORTSET_H
 #define CLUCENE_QUICKSORTSET_H
 
+#include <memory>
+#include <optional>
+
 #include "CLucene/_ApiHeader.h"
 #include "Lexeme.h"
-#include <memory>
 
 CL_NS_DEF2(analysis, ik)
 
@@ -14,47 +16,51 @@ class CLUCENE_EXPORT QuickSortSet {
 protected:
     class Cell {
     public:
-        explicit Cell(std::shared_ptr<Lexeme> lexeme) : lexeme_(std::move(lexeme)) {}
-
+        Cell() = default;
+        explicit Cell(Lexeme&& lexeme) : lexeme_(std::move(lexeme)) {}
         ~Cell() = default;
 
-        bool operator<(const Cell& other) const;
-        bool operator==(const Cell& other) const;
+        bool operator<(const Cell& other) const { return lexeme_ < other.lexeme_; };
+        bool operator==(const Cell& other) const { return lexeme_ == other.lexeme_; };
 
-        std::shared_ptr<Cell> getPrev() const { return prev_.lock(); }
-        std::shared_ptr<Cell> getNext() const { return next_; }
-        std::shared_ptr<Lexeme> getLexeme() const { return lexeme_; }
+        Cell* getPrev() const { return prev_; }
+        Cell* getNext() const { return next_; }
+        const Lexeme& getLexeme() const { return lexeme_; }
+        Lexeme& getLexeme() { return lexeme_; }
 
     private:
-        std::weak_ptr<Cell> prev_;
-        std::shared_ptr<Cell> next_;
-        std::shared_ptr<Lexeme> lexeme_;
+        Cell* prev_ = nullptr;
+        Cell* next_ = nullptr;
+        Lexeme lexeme_;
 
         friend class QuickSortSet;
     };
 
-    std::shared_ptr<Cell> head_;
-    std::shared_ptr<Cell> tail_;
-    size_t cell_size_ {0};
+    Cell* head_ = nullptr;
+    Cell* tail_ = nullptr;
+    size_t cell_size_ = 0;
 
 public:
-    QuickSortSet();
+    QuickSortSet() = default;
     virtual ~QuickSortSet();
 
     QuickSortSet(const QuickSortSet&) = delete;
     QuickSortSet& operator=(const QuickSortSet&) = delete;
 
-    bool addLexeme(std::shared_ptr<Lexeme> lexeme);
-    std::shared_ptr<Lexeme> peekFirst();
-    std::shared_ptr<Lexeme> pollFirst();
-    std::shared_ptr<Lexeme> peekLast();
-    std::shared_ptr<Lexeme> pollLast();
+    bool addLexeme(Lexeme lexeme);
+    const Lexeme* peekFirst() const;
+    std::optional<Lexeme> pollFirst();
+    const Lexeme* peekLast() const;
+    std::optional<Lexeme> pollLast();
     void clear();
+
+    size_t getPathBegin() const;
+    size_t getPathEnd() const;
 
     size_t getSize() const { return cell_size_; }
     bool isEmpty() const { return cell_size_ == 0; }
-    std::shared_ptr<Cell> getHead() { return head_; }
-    std::shared_ptr<const Cell> getHead() const { return head_; }
+    Cell* getHead() { return head_; }
+    const Cell* getHead() const { return head_; }
 };
 
 CL_NS_END2

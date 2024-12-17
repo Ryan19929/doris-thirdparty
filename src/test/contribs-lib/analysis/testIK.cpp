@@ -2,7 +2,6 @@
 #include <memory>
 #include <sstream>
 
-#include "CLucene/analysis/ik/dic/Dictionary.h"
 #include "CLucene/analysis/ik/core/Lexeme.h"
 #include "CLucene/analysis/ik/core/CharacterUtil.h"
 #include "CLucene/analysis/ik/core/AnalyzeContext.h"
@@ -63,11 +62,11 @@ void testCJKSegmenter(CuTest* tc) {
             std::make_unique<lucene::util::SStringReader<char>>(testStr1, strlen(testStr1), false);
     context->fillBuffer(reader1.get());
 
-    segmenter.analyze(context);
+    segmenter.analyze(*context);
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "我");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
@@ -78,17 +77,17 @@ void testCJKSegmenter(CuTest* tc) {
     context->fillBuffer(reader2.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "研究生");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr3 = "清华大学计算机系";
     context->reset();
@@ -97,19 +96,19 @@ void testCJKSegmenter(CuTest* tc) {
     context->fillBuffer(reader3.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "清华大学");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "计算机系");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
@@ -120,28 +119,28 @@ void testCJKSegmenter(CuTest* tc) {
     context->fillBuffer(reader4.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "我");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "的");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "研究生");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "同学");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNWord);
 
@@ -158,13 +157,13 @@ void testLetterSegmenter(CuTest* tc) {
             std::make_unique<lucene::util::SStringReader<char>>(testStr1, strlen(testStr1), false);
     context->fillBuffer(reader1.get());
 
-    segmenter.analyze(context);
-    arbitrator.process(context, cfg->isUseSmart());
+    segmenter.analyze(*context);
+    arbitrator.process(*context, cfg->isUseSmart());
 
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "B");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::English);
 
@@ -175,23 +174,23 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader2.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "Hello");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::English);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "World");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::English);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr3 = "12345";
     context->reset();
@@ -200,18 +199,18 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader3.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "12345");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::Arabic);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr4 = "Hello123";
     context->reset();
@@ -220,18 +219,18 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader4.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "Hello123");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::Letter);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 
     const char* testStr5 = "windows2000";
     context->reset();
@@ -240,18 +239,18 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader5.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme !=  std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "windows2000");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::Letter);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
 }
 
 void testCNQuantifierSegmenter(CuTest* tc) {
@@ -267,28 +266,28 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->fillBuffer(reader2.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
 
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "三个");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CQuan);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "苹");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "果");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() == std::nullopt);
 
     const char* testStr3 = "我有二十三个苹果";
     context->reset();
@@ -297,37 +296,37 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->fillBuffer(reader3.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "我");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "有");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "二十三个");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CQuan);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "苹");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme != nullptr);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "果");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
-    CuAssertTrue(tc, context->getNextLexeme() == nullptr);
+    CuAssertTrue(tc, context->getNextLexeme() == std::nullopt);
 }
 
 void testSimpleIKTokenizer(CuTest* tc) {
@@ -344,7 +343,7 @@ void testSimpleIKTokenizer(CuTest* tc) {
     a.initDict("./ik-dict");
     ts = a.tokenStream(_T("contents"), reader.get());
 
-    CLUCENE_ASSERT(ts->next(&t) != NULL);
+    CLUCENE_ASSERT(ts->next(&t) != nullptr);
     CLUCENE_ASSERT(strncmp(t.termBuffer<char>(), "我爱你", t.termLength<char>()) == 0);
 
     CLUCENE_ASSERT(ts->next(&t) != NULL);
@@ -1266,6 +1265,7 @@ void testIKMatchHuge(CuTest* tc) {
 void testIKSmartModeTokenizer(CuTest* tc) {
     LanguageBasedAnalyzer a;
     Configuration cfg;
+    a.setLanguage(_T("ik"));
     a.setIKConfiguration(cfg);
     a.initDict("./ik-dict");
     const char* field_value_data = "我来到北京清华大学";
@@ -1274,7 +1274,6 @@ void testIKSmartModeTokenizer(CuTest* tc) {
     TokenStream* ts;
     Token t;
 
-    a.setLanguage(_T("ik"));
     a.setStem(false);
     a.setMode(AnalyzerMode::IK_Smart); // 使用 Smart 模式
     ts = a.tokenStream(_T("contents"), stringReader.get());
@@ -1332,7 +1331,6 @@ void testIKMaxWordModeTokenizer(CuTest* tc) {
     TokenStream* ts;
     Token t;
 
-    // 测试 IK 分词
     a.setLanguage(_T("ik"));
     a.setStem(false);
     a.setMode(AnalyzerMode::IK_Max_Word);
@@ -1525,18 +1523,15 @@ void testIKRareCharacters(CuTest* tc) {
     _CLDELETE(ts);
 }
 
-
-void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
+void testIKMatchHugeFromFile(CuTest* tc, const char* fname, bool printResult) {
     if (!Misc::dir_Exists(fname)) {
         CuMessageA(tc, "File does not exist: %s\n", fname);
         return;
     }
-    // 获取文件大小
     struct fileStat buf;
     fileStat(fname, &buf);
     int64_t bytes = buf.st_size;
 
-    // 使用 vector<char> 来存储文件内容
     std::vector<char> fileContent(bytes);
     {
         FILE* f = fopen(fname, "rb");
@@ -1550,38 +1545,33 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
 
     CuMessageA(tc, "Reading test file containing %d bytes.\n", bytes);
 
-    // 使用 SStringReader 读取文件内容
     auto stringReader = std::make_unique<lucene::util::SStringReader<char>>(
             fileContent.data(), fileContent.size(), false);
 
-    // 初始化分词器
     auto analyzer = std::make_unique<lucene::analysis::LanguageBasedAnalyzer>();
     analyzer->setLanguage(L"ik");
     analyzer->setMode(AnalyzerMode::IK_Smart);
     analyzer->initDict("./ik-dict");
     analyzer->setStem(false);
-    // 记录开始时间
     uint64_t start = Misc::currentTimeMillis();
 
-    // 执行分词
     TokenStream* ts = analyzer->tokenStream(_T("contents"), stringReader.get());
     Token t;
     int32_t count = 0;
 
-    while(ts->next(&t)) {
+    while (ts->next(&t)) {
         count++;
     }
 
-    // 记录结束时间
     uint64_t end = Misc::currentTimeMillis();
     int64_t time = end - start;
 
-    // 输出统计信息
-    CuMessageA(tc, "分词耗时: %d 毫秒\n", time);
-    CuMessageA(tc, "分词数量: %d\n", count);
-    CuMessageA(tc, "平均每个分词耗时: %.2f 微秒\n", (time * 1000.0) / count);
-    CuMessageA(tc, "处理速度: %.2f MB/s\n",
-               (bytes / 1024.0 / 1024.0) / (time / 1000.0));
+    if (printResult) {
+        CuMessageA(tc, "分词耗时: %d 毫秒\n", time);
+        CuMessageA(tc, "分词数量: %d\n", count);
+        CuMessageA(tc, "平均每个分词耗时: %.2f 微秒\n", (time * 1000.0) / count);
+        CuMessageA(tc, "处理速度: %.2f MB/s\n", (bytes / 1024.0 / 1024.0) / (time / 1000.0));
+    }
 
     _CLDELETE(ts);
 }
@@ -1589,34 +1579,43 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
 void testFileIK(CuTest* tc) {
     char loc[1024];
     strcpy(loc, clucene_data_location);
-    strcat(loc, "/reuters-21578/chinese-perf.txt");
-    testIKMatchHugeFromFile(tc, loc);
+    strcat(loc, "/contribs-lib/analysis/chinese/speed-test-text.txt");
+
+    // 预热
+    for (int i = 0; i < 3; i++) {
+        testIKMatchHugeFromFile(tc, loc, false);
+    }
+
+    // 实际测试
+    for (int i = 0; i < 5; i++) {
+        testIKMatchHugeFromFile(tc, loc, true);
+    }
 }
 
 CuSuite* testik(void) {
     CuSuite* suite = CuSuiteNew(_T("CLucene IK Test"));
 
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
-//
-//    SUITE_ADD_TEST(suite, testCharacterUtil);
-//    SUITE_ADD_TEST(suite, testCJKSegmenter);
-//    SUITE_ADD_TEST(suite, testLetterSegmenter);
-//    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
-//    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
-//    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
-//
-//    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
-//    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
-//    SUITE_ADD_TEST(suite, testIKRareCharacters);
-//
-//    SUITE_ADD_TEST(suite, testIKMatch);
-//    SUITE_ADD_TEST(suite, testIKMatch2);
-//    SUITE_ADD_TEST(suite, testIKMatchHuge);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
+
+    SUITE_ADD_TEST(suite, testCharacterUtil);
+    SUITE_ADD_TEST(suite, testCJKSegmenter);
+    SUITE_ADD_TEST(suite, testLetterSegmenter);
+    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
+    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
+    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
+
+    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
+    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
+    SUITE_ADD_TEST(suite, testIKRareCharacters);
+
+    //    SUITE_ADD_TEST(suite, testIKMatch);
+    //    SUITE_ADD_TEST(suite, testIKMatch2);
+    //    SUITE_ADD_TEST(suite, testIKMatchHuge);
     SUITE_ADD_TEST(suite, testFileIK);
 
     return suite;

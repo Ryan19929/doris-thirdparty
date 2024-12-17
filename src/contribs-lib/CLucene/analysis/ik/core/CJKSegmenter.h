@@ -2,11 +2,12 @@
 #define CLUCENE_CJKSEGMENTER_H
 
 #include <list>
-#include <string>
 #include <memory>
+#include <string>
 
 #include "AnalyzeContext.h"
 #include "CLucene/analysis/ik/dic/Dictionary.h"
+#include "CLucene/analysis/ik/util/IKContainer.h"
 #include "CharacterUtil.h"
 #include "ISegmenter.h"
 
@@ -15,12 +16,12 @@ CL_NS_DEF2(analysis, ik)
 class CJKSegmenter : public ISegmenter {
 private:
     static const std::string SEGMENTER_NAME;
-    std::list<Hit> tmp_hits_;
+    IKList<Hit> tmp_hits_;
 
 public:
     CJKSegmenter();
 
-    void analyze(std::shared_ptr<AnalyzeContext> context) override;
+    void analyze(AnalyzeContext& context) override;
     void reset() override;
 };
 

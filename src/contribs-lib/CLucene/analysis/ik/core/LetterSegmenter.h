@@ -2,11 +2,13 @@
 #define CLUCENE_LETTERSEGMENTER_H
 
 #include <algorithm>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "AnalyzeContext.h"
+#include "CLucene/analysis/ik/util/IKContainer.h"
 #include "ISegmenter.h"
+
 CL_NS_DEF2(analysis, ik)
 
 class LetterSegmenter : public ISegmenter {
@@ -15,25 +17,25 @@ public:
     LetterSegmenter();
     ~LetterSegmenter() override = default;
 
-    void analyze(shared_ptr<AnalyzeContext> context) override;
+    void analyze(AnalyzeContext& context) override;
     void reset() override;
 
 private:
-    bool processEnglishLetter(shared_ptr<AnalyzeContext> context);
-    bool processArabicLetter(shared_ptr<AnalyzeContext> context);
-    bool processMixLetter(shared_ptr<AnalyzeContext> context);
+    bool processEnglishLetter(AnalyzeContext& context);
+    bool processArabicLetter(AnalyzeContext& context);
+    bool processMixLetter(AnalyzeContext& context);
     bool isLetterConnector(char input);
     bool isNumConnector(char input);
 
-    int start_{-1};
-    int end_{-1};
-    int english_start_{-1};
-    int english_end_{-1};
-    int arabic_start_{-1};
-    int arabic_end_{-1};
+    int start_ {-1};
+    int end_ {-1};
+    int english_start_ {-1};
+    int english_end_ {-1};
+    int arabic_start_ {-1};
+    int arabic_end_ {-1};
 
-    std::vector<char> letter_connectors_;
-    std::vector<char> num_connectors_;
+    IKVector<char> letter_connectors_;
+    IKVector<char> num_connectors_;
 };
 CL_NS_END2
 

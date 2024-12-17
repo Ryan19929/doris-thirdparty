@@ -3,25 +3,26 @@
 
 #include <CLucene.h>
 
-#include <unordered_map>
+#include <array>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "CLucene/analysis/ik/core/CharacterUtil.h"
 #include "Hit.hpp"
+
 CL_NS_DEF2(analysis, ik)
 
 class CLUCENE_EXPORT DictSegment : public std::enable_shared_from_this<DictSegment> {
 private:
-    static const size_t ARRAY_LENGTH_LIMIT = 3;
-
+    static constexpr size_t ARRAY_LENGTH_LIMIT = 3;
     int32_t key_char_;
-    std::vector<std::shared_ptr<DictSegment>> children_array_;
-    std::unordered_map<int32_t, std::shared_ptr<DictSegment>> children_map_;
-    size_t store_size_ {0};
-    int node_state_ {0};
+    std::vector<std::unique_ptr<DictSegment>> children_array_;
+    std::unordered_map<int32_t, std::unique_ptr<DictSegment>> children_map_;
 
-    std::shared_ptr<DictSegment> lookforSegment(int32_t key_char, bool create_if_missing);
+    DictSegment* lookforSegment(int32_t key_char, bool create_if_missing);
+    int node_state_ {0};
+    size_t store_size_ {0};
 
 public:
     explicit DictSegment(int32_t key_char);
@@ -33,14 +34,10 @@ public:
     DictSegment& operator=(DictSegment&&) noexcept = default;
 
     bool hasNextNode() const;
-    Hit match(const CharacterUtil::TypedRuneArray& typed_runes);
-
     Hit match(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset,
               size_t count);
-
     void match(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset,
                size_t count, Hit& search_hit);
-
     void fillSegment(const char* text);
 };
 

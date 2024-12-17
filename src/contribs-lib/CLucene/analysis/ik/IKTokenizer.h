@@ -11,6 +11,7 @@
 CL_NS_DEF2(analysis, ik)
 CL_NS_USE(analysis)
 
+
 class IKTokenizer : public lucene::analysis::Tokenizer {
 private:
     int32_t buffer_index_ {0};
@@ -20,9 +21,10 @@ private:
     std::shared_ptr<Configuration> config_;
 
 public:
+
     explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config);
-    explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config, bool is_smart, bool use_lowercase,
-                         bool own_reader = false);
+    explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config,
+                         bool is_smart, bool use_lowercase, bool own_reader = false);
     ~IKTokenizer() override = default;
 
     lucene::analysis::Token* next(lucene::analysis::Token* token) override;

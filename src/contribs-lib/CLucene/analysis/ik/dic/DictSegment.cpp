@@ -15,14 +15,6 @@ bool DictSegment::hasNextNode() const {
     return store_size_ > 0;
 }
 
-Hit DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes) {
-    Hit search_hit;
-    search_hit.setByteBegin(0);
-    search_hit.setCharBegin(0);
-    match(typed_runes, 0, typed_runes.size(), search_hit);
-    return search_hit;
-}
-
 Hit DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset,
                        size_t count) {
     Hit search_hit;
@@ -47,18 +39,18 @@ void DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes, size_t
                     : count;
 
     int32_t ch = typed_runes[unicode_offset].getChar();
-    std::shared_ptr<DictSegment> ds = nullptr;
+    DictSegment* ds = nullptr;
     if (store_size_ <= ARRAY_LENGTH_LIMIT) {
         for (size_t i = 0; i < store_size_ && i < children_array_.size(); i++) {
             if (children_array_[i]->key_char_ == ch) {
-                ds = children_array_[i];
+                ds = children_array_[i].get();
                 break;
             }
         }
     } else {
         auto it = children_map_.find(ch);
         if (it != children_map_.end()) {
-            ds = it->second;
+            ds = it->second.get();
         }
     }
 
@@ -84,7 +76,7 @@ void DictSegment::fillSegment(const char* text) {
     if (!cleanText.empty() && static_cast<unsigned char>(cleanText[0]) == 0xEF &&
         static_cast<unsigned char>(cleanText[1]) == 0xBB &&
         static_cast<unsigned char>(cleanText[2]) == 0xBF) {
-        cleanText.erase(0, 3); // 移除 UTF-8 BOM
+        cleanText.erase(0, 3);
     }
     if (!cleanText.empty() && cleanText.back() == '\r') {
         cleanText.pop_back();
@@ -97,7 +89,7 @@ void DictSegment::fillSegment(const char* text) {
         return;
     }
 
-    std::shared_ptr<DictSegment> current = shared_from_this();
+    DictSegment* current = this;
     for (const auto& rune : runes) {
         auto child = current->lookforSegment(rune.rune, true);
         if (!child) return;
@@ -106,18 +98,18 @@ void DictSegment::fillSegment(const char* text) {
     current->node_state_ = 1;
 }
 
-std::shared_ptr<DictSegment> DictSegment::lookforSegment(int32_t keyChar, bool create) {
-    std::shared_ptr<DictSegment> child = nullptr;
+DictSegment* DictSegment::lookforSegment(int32_t keyChar, bool create) {
+    DictSegment* child = nullptr;
 
     if (store_size_ <= ARRAY_LENGTH_LIMIT) {
         for (size_t i = 0; i < store_size_ && i < children_array_.size(); i++) {
             if (children_array_[i]->key_char_ == keyChar) {
-                child = children_array_[i];
+                child = children_array_[i].get();
                 break;
             }
         }
         if (!child && create) {
-            child = std::make_shared<DictSegment>(keyChar);
+            auto new_segment = std::make_unique<DictSegment>(keyChar);
             if (store_size_ < ARRAY_LENGTH_LIMIT) {
                 if (store_size_ >= children_array_.size()) {
                     children_array_.resize(store_size_ + 1);
@@ -129,15 +121,18 @@ std::shared_ptr<DictSegment> DictSegment::lookforSegment(int32_t keyChar, bool c
                 }
                 // 移动现有元素
                 for (size_t i = store_size_; i > insertPos; i--) {
-                    children_array_[i] = children_array_[i - 1];
+                    children_array_[i] = std::move(children_array_[i - 1]);
                 }
-                children_array_[insertPos] = child;
+                child = new_segment.get();
+
+                children_array_[insertPos] = std::move(new_segment);
                 store_size_++;
             } else {
                 for (size_t i = 0; i < store_size_; i++) {
-                    children_map_[children_array_[i]->key_char_] = children_array_[i];
+                    children_map_[children_array_[i]->key_char_] = std::move(children_array_[i]);
                 }
-                children_map_[keyChar] = child;
+                child = new_segment.get();
+                children_map_[keyChar] = std::move(new_segment);
                 store_size_++;
                 children_array_.clear();
                 children_array_.shrink_to_fit();
@@ -146,10 +141,11 @@ std::shared_ptr<DictSegment> DictSegment::lookforSegment(int32_t keyChar, bool c
     } else {
         auto it = children_map_.find(keyChar);
         if (it != children_map_.end()) {
-            child = it->second;
+            child = it->second.get();
         } else if (create) {
-            child = std::make_shared<DictSegment>(keyChar);
-            children_map_[keyChar] = child;
+            auto new_segment = std::make_unique<DictSegment>(keyChar);
+            child = new_segment.get();
+            children_map_[keyChar] = std::move(new_segment);
             store_size_++;
         }
     }

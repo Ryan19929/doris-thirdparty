@@ -16,7 +16,7 @@ private:
     static const int PREFIX = 0x00000010;
 
     int hitState_ {UNMATCH};
-    std::weak_ptr<DictSegment> matchedDictSegment_;
+    DictSegment* matchedDictSegment_;
     size_t byteBegin_ {0};
     size_t byteEnd_ {0};
     size_t charBegin_ {0};
@@ -34,10 +34,8 @@ public:
     bool isUnmatch() const { return hitState_ == UNMATCH; }
     void setUnmatch() { hitState_ = UNMATCH; }
 
-    std::weak_ptr<DictSegment> getMatchedDictSegment() const { return matchedDictSegment_; }
-    void setMatchedDictSegment(std::shared_ptr<DictSegment> segment) {
-        matchedDictSegment_ = segment;
-    }
+    DictSegment* getMatchedDictSegment() const { return matchedDictSegment_; }
+    void setMatchedDictSegment(DictSegment* segment) { matchedDictSegment_ = segment; }
 
     size_t getByteBegin() const { return byteBegin_; }
     void setByteBegin(size_t pos) { byteBegin_ = pos; }

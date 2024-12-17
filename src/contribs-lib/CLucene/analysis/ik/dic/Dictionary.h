@@ -4,8 +4,8 @@
 #include <CLucene.h>
 
 #include <memory>
-#include <string>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include "CLucene/LuceneThreads.h"
@@ -20,14 +20,24 @@ CL_NS_USE(analysis)
 
 class Dictionary {
 private:
-    static std::shared_ptr<Dictionary> singleton_;
+    static Dictionary* singleton_;
     static std::once_flag init_flag_;
     // Dictionary segment mappings
-    std::shared_ptr<DictSegment> main_dict_;
-    std::shared_ptr<DictSegment> quantifier_dict_;
-    std::shared_ptr<DictSegment> stop_words_;
-    std::shared_ptr<Configuration> config_;
+    std::unique_ptr<DictSegment> main_dict_;
+    std::unique_ptr<DictSegment> quantifier_dict_;
+    std::unique_ptr<DictSegment> stop_words_;
+    std::unique_ptr<Configuration> config_;
     bool load_ext_dict_;
+    class Cleanup {
+    public:
+        ~Cleanup() {
+            if (Dictionary::singleton_) {
+                delete Dictionary::singleton_;
+                Dictionary::singleton_ = nullptr;
+            }
+        }
+    };
+    static Cleanup cleanup_;
 
     // Dictionary paths
     static const std::string PATH_DIC_MAIN;
@@ -40,28 +50,35 @@ private:
     void loadStopWordDict();
     void loadQuantifierDict();
 
-    void loadDictFile(std::shared_ptr<DictSegment> dict, const std::string& file_path,
-                      bool critical, const std::string& dict_name);
+    void loadDictFile(DictSegment* dict, const std::string& file_path, bool critical,
+                      const std::string& dict_name);
 
     Dictionary(const Dictionary&) = delete;
     Dictionary& operator=(const Dictionary&) = delete;
 
 public:
+    static void destroy() {
+        if (singleton_) {
+            delete singleton_;
+            singleton_ = nullptr;
+        }
+    }
+    ~Dictionary() {}
+
     static void initial(const Configuration& cfg, bool useExtDict = false) {
         getSingleton(cfg, useExtDict);
     }
 
-    static std::shared_ptr<Dictionary> getSingleton() {
+    static Dictionary* getSingleton() {
         if (!singleton_) {
             _CLTHROWA(CL_ERR_IllegalState, "Dictionary not initialized");
         }
         return singleton_;
     }
 
-    static std::shared_ptr<Dictionary> getSingleton(const Configuration& cfg,
-                                                    bool useExtDict = false) {
+    static Dictionary* getSingleton(const Configuration& cfg, bool useExtDict = false) {
         std::call_once(init_flag_, [&]() {
-            singleton_ = std::shared_ptr<Dictionary>(new Dictionary(cfg, useExtDict));
+            singleton_ = new Dictionary(cfg, useExtDict);
             singleton_->loadMainDict();
             singleton_->loadQuantifierDict();
             singleton_->loadStopWordDict();
@@ -81,16 +98,17 @@ public:
                       Hit& hit);
     bool isStopWord(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset = 0,
                     size_t count = 0);
-    ~Dictionary() = default;
+
+    void printStats() const;
 };
 
-inline std::shared_ptr<Dictionary> Dictionary::singleton_ = nullptr;
+inline Dictionary* Dictionary::singleton_ = nullptr;
 inline std::once_flag Dictionary::init_flag_;
 
 inline const std::string Dictionary::PATH_DIC_MAIN = "main.dic";
 inline const std::string Dictionary::PATH_DIC_QUANTIFIER = "quantifier.dic";
 inline const std::string Dictionary::PATH_DIC_STOP = "stopword.dic";
-
+inline Dictionary::Cleanup Dictionary::cleanup_;
 CL_NS_END2
 
 #endif //CLUCENE_DICTIONARY_H

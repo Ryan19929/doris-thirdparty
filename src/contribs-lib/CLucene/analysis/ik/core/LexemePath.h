@@ -1,20 +1,24 @@
 #ifndef CLUCENE_LEXEMEPATH_H
 #define CLUCENE_LEXEMEPATH_H
 
+#include <memory>
+#include <optional>
+
 #include "CLucene/_ApiHeader.h"
 #include "QuickSortSet.h"
-#include <memory>
 
 CL_NS_DEF2(analysis, ik)
 
 class CLUCENE_EXPORT LexemePath : public QuickSortSet {
 public:
     LexemePath();
+    LexemePath(const LexemePath& other);
+    LexemePath(LexemePath&& other) noexcept;
 
-    bool addCrossLexeme(const std::shared_ptr<Lexeme>& lexeme);
-    bool addNotCrossLexeme(const std::shared_ptr<Lexeme>& lexeme);
-    std::shared_ptr<Lexeme> removeTail();
-    bool checkCross(const std::shared_ptr<Lexeme>& lexeme) const;
+    bool addCrossLexeme(const Lexeme& lexeme);
+    bool addNotCrossLexeme(const Lexeme& lexeme);
+    std::optional<Lexeme> removeTail();
+    bool checkCross(const Lexeme& lexeme) const;
 
     size_t getPathBegin() const { return path_begin_; }
     size_t getPathEnd() const { return path_begin_; }
@@ -24,8 +28,6 @@ public:
 
     size_t getXWeight() const;
     size_t getPWeight() const;
-
-    LexemePath* copy() const;
 
     bool operator<(const LexemePath& other) const;
     bool operator==(const LexemePath& other) const;

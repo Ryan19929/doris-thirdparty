@@ -1443,39 +1443,45 @@ void testLanguageBasedAnalyzer(CuTest* tc) {
     _CLDELETE(ts);
 }
 
-void testJiebaMatchHugeFromFile(CuTest* tc, const char* fname) {
+void testJiebaMatchHugeFromFile(CuTest* tc, const char* fname, bool printResult) {
     if (!Misc::dir_Exists(fname)) {
-        CuMessageA(tc, "File does not exist: %s\n", fname);
+        if (printResult) {
+            CuMessageA(tc, "File does not exist: %s\n", fname);
+        }
         return;
     }
+
     // 获取文件大小
     struct fileStat buf;
     fileStat(fname, &buf);
     int64_t bytes = buf.st_size;
 
-    // 使用 vector<char> 来存储文件内容
+    if (printResult) {
+        CuMessageA(tc, "Reading test file containing %d bytes.\n", bytes);
+    }
+
+    // 使用 vector<char> 来存储文件内容并以UTF-8编码读取
     std::vector<char> fileContent(bytes);
     {
         FILE* f = fopen(fname, "rb");
         if (f == nullptr) {
-            CuMessageA(tc, "Failed to open file: %s\n", fname);
+            if (printResult) {
+                CuMessageA(tc, "Failed to open file: %s\n", fname);
+            }
             return;
         }
         fread(fileContent.data(), 1, bytes, f);
         fclose(f);
     }
 
-    CuMessageA(tc, "Reading test file containing %d bytes.\n", bytes);
-
-    // 使用 SStringReader 读取文件内容
-    auto stringReader = std::make_unique<lucene::util::SStringReader<char>>(
-            fileContent.data(), fileContent.size(), false);
-
     // 初始化分词器
     auto analyzer = std::make_unique<lucene::analysis::LanguageBasedAnalyzer>();
     analyzer->setLanguage(L"chinese");
     analyzer->setMode(lucene::analysis::AnalyzerMode::Default);
     analyzer->initDict("./dict");
+
+    auto stringReader = std::make_unique<lucene::util::SStringReader<char>>(
+            fileContent.data(), fileContent.size(), false);
 
     // 记录开始时间
     uint64_t start = Misc::currentTimeMillis();
@@ -1485,7 +1491,7 @@ void testJiebaMatchHugeFromFile(CuTest* tc, const char* fname) {
     Token t;
     int32_t count = 0;
 
-    while(ts->next(&t)) {
+    while (ts->next(&t)) {
         count++;
     }
 
@@ -1493,12 +1499,13 @@ void testJiebaMatchHugeFromFile(CuTest* tc, const char* fname) {
     uint64_t end = Misc::currentTimeMillis();
     int64_t time = end - start;
 
-    // 输出统计信息
-    CuMessageA(tc, "分词耗时: %d 毫秒\n", time);
-    CuMessageA(tc, "分词数量: %d\n", count);
-    CuMessageA(tc, "平均每个分词耗时: %.2f 微秒\n", (time * 1000.0) / count);
-    CuMessageA(tc, "处理速度: %.2f MB/s\n",
-               (bytes / 1024.0 / 1024.0) / (time / 1000.0));
+    // 只在需要时输出统计信息
+    if (printResult) {
+        CuMessageA(tc, "分词耗时: %d 毫秒\n", time);
+        CuMessageA(tc, "分词数量: %d\n", count);
+        CuMessageA(tc, "平均每个分词耗时: %.2f 微秒\n", (time * 1000.0) / count);
+        CuMessageA(tc, "处理速度: %.2f MB/s\n", (bytes / 1024.0 / 1024.0) / (time / 1000.0));
+    }
 
     _CLDELETE(ts);
 }
@@ -1506,31 +1513,40 @@ void testJiebaMatchHugeFromFile(CuTest* tc, const char* fname) {
 void testFileJieba(CuTest* tc) {
     char loc[1024];
     strcpy(loc, clucene_data_location);
-    strcat(loc, "/reuters-21578/chinese-perf.txt");
-    testJiebaMatchHugeFromFile(tc, loc);
+    strcat(loc, "/contribs-lib/analysis/chinese/speed-test-text.txt");
+
+    // 预热阶段
+    for (int i = 0; i < 3; i++) {
+        testJiebaMatchHugeFromFile(tc, loc, false);
+    }
+
+    // 实际测试
+    for (int i = 0; i < 5; i++) {
+        testJiebaMatchHugeFromFile(tc, loc, true);
+    }
 }
 
 CuSuite* testchinese(void) {
     CuSuite* suite = CuSuiteNew(_T("CLucene chinese tokenizer Test"));
 
-//    SUITE_ADD_TEST(suite, testFile);
-//    SUITE_ADD_TEST(suite, testCJK);
-//    SUITE_ADD_TEST(suite, testLanguageBasedAnalyzer);
-//    SUITE_ADD_TEST(suite, testChineseAnalyzer);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer2);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer3);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer4);
-//    SUITE_ADD_TEST(suite, testChineseMatch);
-//    SUITE_ADD_TEST(suite, testJiebaMatch);
-//    SUITE_ADD_TEST(suite, testJiebaMatch2);
-//    SUITE_ADD_TEST(suite, testJiebaMatchHuge);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaAllModeTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaDefaultModeTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaDefaultModeTokenizer2);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaSearchModeTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaAllModeTokenizer2);
-//    SUITE_ADD_TEST(suite, testSimpleJiebaSearchModeTokenizer2);
+    //    SUITE_ADD_TEST(suite, testFile);
+    //    SUITE_ADD_TEST(suite, testCJK);
+    //    SUITE_ADD_TEST(suite, testLanguageBasedAnalyzer);
+    //    SUITE_ADD_TEST(suite, testChineseAnalyzer);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer2);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer3);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaTokenizer4);
+    //    SUITE_ADD_TEST(suite, testChineseMatch);
+    //    SUITE_ADD_TEST(suite, testJiebaMatch);
+    //    SUITE_ADD_TEST(suite, testJiebaMatch2);
+    //    SUITE_ADD_TEST(suite, testJiebaMatchHuge);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaAllModeTokenizer);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaDefaultModeTokenizer);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaDefaultModeTokenizer2);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaSearchModeTokenizer);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaAllModeTokenizer2);
+    //    SUITE_ADD_TEST(suite, testSimpleJiebaSearchModeTokenizer2);
     SUITE_ADD_TEST(suite, testFileJieba);
 
     return suite;

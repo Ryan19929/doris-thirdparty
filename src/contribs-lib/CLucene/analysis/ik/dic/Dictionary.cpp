@@ -8,13 +8,13 @@ CL_NS_DEF2(analysis, ik)
 
 Dictionary::Dictionary(const Configuration& cfg, bool use_ext_dict)
         : config_(std::make_unique<Configuration>(cfg)),
-          main_dict_(std::make_shared<DictSegment>(0)),
-          quantifier_dict_(std::make_shared<DictSegment>(0)),
-          stop_words_(std::make_shared<DictSegment>(0)),
+          main_dict_(std::make_unique<DictSegment>(0)),
+          quantifier_dict_(std::make_unique<DictSegment>(0)),
+          stop_words_(std::make_unique<DictSegment>(0)),
           load_ext_dict_(use_ext_dict) {}
 
-void Dictionary::loadDictFile(std::shared_ptr<DictSegment> dict, const std::string& file_path,
-                              bool critical, const std::string& dict_name) {
+void Dictionary::loadDictFile(DictSegment* dict, const std::string& file_path, bool critical,
+                              const std::string& dict_name) {
     std::ifstream in(file_path);
     if (!in.good()) {
         if (critical) {
@@ -33,32 +33,34 @@ void Dictionary::loadDictFile(std::shared_ptr<DictSegment> dict, const std::stri
 }
 
 void Dictionary::loadMainDict() {
-    loadDictFile(main_dict_, config_->getDictPath() + "/" + config_->getMainDictFile(), true,
+    loadDictFile(main_dict_.get(), config_->getDictPath() + "/" + config_->getMainDictFile(), true,
                  "Main Dict");
 
     // Load extension dictionaries
     if (load_ext_dict_) {
         for (const auto& extDict : config_->getExtDictFiles()) {
-            loadDictFile(main_dict_, config_->getDictPath() + "/" + extDict, false, "Extra Dict");
+            loadDictFile(main_dict_.get(), config_->getDictPath() + "/" + extDict, false,
+                         "Extra Dict");
         }
     }
 }
 
 void Dictionary::loadStopWordDict() {
-    loadDictFile(stop_words_, config_->getDictPath() + "/" + config_->getStopWordDictFile(), false,
-                 "Stopword");
+    loadDictFile(stop_words_.get(), config_->getDictPath() + "/" + config_->getStopWordDictFile(),
+                 false, "Stopword");
     // Load extension stop words dictionary
     if (load_ext_dict_) {
         for (const auto& extDict : config_->getExtStopWordDictFiles()) {
-            loadDictFile(stop_words_, config_->getDictPath() + "/" + extDict, false,
+            loadDictFile(stop_words_.get(), config_->getDictPath() + "/" + extDict, false,
                          "Extra Stopword");
         }
     }
 }
 
 void Dictionary::loadQuantifierDict() {
-    loadDictFile(quantifier_dict_, config_->getDictPath() + "/" + config_->getQuantifierDictFile(),
-                 true, "Quantifier");
+    loadDictFile(quantifier_dict_.get(),
+                 config_->getDictPath() + "/" + config_->getQuantifierDictFile(), true,
+                 "Quantifier");
 }
 
 void Dictionary::reload() {
@@ -76,7 +78,7 @@ Hit Dictionary::matchInMainDict(const CharacterUtil::TypedRuneArray& typed_runes
     count = (count == 0 || unicode_offset + count > typed_runes.size())
                     ? typed_runes.size() - unicode_offset
                     : count;
-    result = main_dict_->match(typed_runes, unicode_offset, count);
+    result = main_dict_.get()->match(typed_runes, unicode_offset, count);
 
     if (!result.isUnmatch()) {
         result.setByteBegin(typed_runes[unicode_offset].offset);
@@ -94,7 +96,7 @@ Hit Dictionary::matchInQuantifierDict(const CharacterUtil::TypedRuneArray& typed
     count = (count == 0 || unicode_offset + count > typed_runes.size())
                     ? typed_runes.size() - unicode_offset
                     : count;
-    result = quantifier_dict_->match(typed_runes, unicode_offset, count);
+    result = quantifier_dict_.get()->match(typed_runes, unicode_offset, count);
 
     if (!result.isUnmatch()) {
         result.setByteBegin(typed_runes[unicode_offset].offset);
@@ -107,8 +109,7 @@ Hit Dictionary::matchInQuantifierDict(const CharacterUtil::TypedRuneArray& typed
 
 void Dictionary::matchWithHit(const CharacterUtil::TypedRuneArray& typed_runes, int current_index,
                               Hit& hit) {
-    // 获取已匹配的DictSegment
-    if (auto matchedSegment = hit.getMatchedDictSegment().lock()) {
+    if (auto matchedSegment = hit.getMatchedDictSegment()) {
         matchedSegment->match(typed_runes, current_index, 1, hit);
         return;
     }
@@ -128,5 +129,7 @@ bool Dictionary::isStopWord(const CharacterUtil::TypedRuneArray& typed_runes, si
 
     return result.isMatch();
 }
+
+
 
 CL_NS_END2

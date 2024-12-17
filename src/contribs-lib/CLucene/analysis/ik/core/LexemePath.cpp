@@ -6,19 +6,48 @@ CL_NS_DEF2(analysis, ik)
 
 LexemePath::LexemePath() : path_begin_(-1), path_end_(-1), payload_length_(0) {}
 
-bool LexemePath::addCrossLexeme(const std::shared_ptr<Lexeme>& lexeme) {
+LexemePath::LexemePath(const LexemePath& other)
+        : QuickSortSet(),
+          path_begin_(other.path_begin_),
+          path_end_(other.path_end_),
+          payload_length_(other.payload_length_) {
+    auto c = other.getHead();
+    while (c != nullptr) {
+        addLexeme(c->getLexeme());
+        c = c->getNext();
+    }
+}
+
+LexemePath::LexemePath(LexemePath&& other) noexcept
+        : QuickSortSet(),
+          path_begin_(other.path_begin_),
+          path_end_(other.path_end_),
+          payload_length_(other.payload_length_) {
+    head_ = other.head_;
+    tail_ = other.tail_;
+    cell_size_ = other.cell_size_;
+
+    other.head_ = nullptr;
+    other.tail_ = nullptr;
+    other.cell_size_ = 0;
+    other.path_begin_ = -1;
+    other.path_end_ = -1;
+    other.payload_length_ = 0;
+}
+
+bool LexemePath::addCrossLexeme(const Lexeme& lexeme) {
     if (isEmpty()) {
         addLexeme(lexeme);
-        path_begin_ = lexeme->getByteBegin();
-        path_end_ = lexeme->getByteBegin() + lexeme->getByteLength();
-        payload_length_ += lexeme->getByteLength();
+        path_begin_ = lexeme.getByteBegin();
+        path_end_ = lexeme.getByteBegin() + lexeme.getByteLength();
+        payload_length_ += lexeme.getByteLength();
         return true;
     }
 
     if (checkCross(lexeme)) {
         addLexeme(lexeme);
-        if (lexeme->getByteBegin() + lexeme->getByteLength() > path_end_) {
-            path_end_ = lexeme->getByteBegin() + lexeme->getByteLength();
+        if (lexeme.getByteBegin() + lexeme.getByteLength() > path_end_) {
+            path_end_ = lexeme.getByteBegin() + lexeme.getByteLength();
         }
         payload_length_ = path_end_ - path_begin_;
         return true;
@@ -27,12 +56,12 @@ bool LexemePath::addCrossLexeme(const std::shared_ptr<Lexeme>& lexeme) {
     return false;
 }
 
-bool LexemePath::addNotCrossLexeme(const std::shared_ptr<Lexeme>& lexeme) {
+bool LexemePath::addNotCrossLexeme(const Lexeme& lexeme) {
     if (isEmpty()) {
         addLexeme(lexeme);
-        path_begin_ = lexeme->getByteBegin();
-        path_end_ = lexeme->getByteBegin() + lexeme->getByteLength();
-        payload_length_ += lexeme->getByteLength();
+        path_begin_ = lexeme.getByteBegin();
+        path_end_ = lexeme.getByteBegin() + lexeme.getByteLength();
+        payload_length_ += lexeme.getByteLength();
         return true;
     }
 
@@ -41,17 +70,17 @@ bool LexemePath::addNotCrossLexeme(const std::shared_ptr<Lexeme>& lexeme) {
     }
 
     addLexeme(lexeme);
-    payload_length_ += lexeme->getByteLength();
+    payload_length_ += lexeme.getByteLength();
     auto head = peekFirst();
     path_begin_ = head->getByteBegin();
     auto tail = peekLast();
     path_end_ = tail->getByteBegin() + tail->getByteLength();
     return true;
 }
-std::shared_ptr<Lexeme> LexemePath::removeTail() {
+std::optional<Lexeme> LexemePath::removeTail() {
     auto tail = pollLast();
     if (!tail) {
-        return nullptr;
+        return nullopt;
     }
 
     if (isEmpty()) {
@@ -68,17 +97,17 @@ std::shared_ptr<Lexeme> LexemePath::removeTail() {
     return tail;
 }
 
-bool LexemePath::checkCross(const std::shared_ptr<Lexeme>& lexeme) const {
-    return (lexeme->getByteBegin() >= path_begin_ && lexeme->getByteBegin() < path_end_) ||
-           (path_begin_ >= lexeme->getByteBegin() &&
-            path_begin_ < lexeme->getByteBegin() + lexeme->getByteLength());
+bool LexemePath::checkCross(const Lexeme& lexeme) const {
+    return (lexeme.getByteBegin() >= path_begin_ && lexeme.getByteBegin() < path_end_) ||
+           (path_begin_ >= lexeme.getByteBegin() &&
+            path_begin_ < lexeme.getByteBegin() + lexeme.getByteLength());
 }
 
 size_t LexemePath::getXWeight() const {
     size_t product = 1;
     auto c = getHead();
     while (c != nullptr) {
-        product *= c->getLexeme()->getByteLength();
+        product *= c->getLexeme().getByteLength();
         c = c->getNext();
     }
     return product;
@@ -90,23 +119,10 @@ size_t LexemePath::getPWeight() const {
     auto c = getHead();
     while (c != nullptr) {
         p++;
-        pWeight += p * c->getLexeme()->getByteLength();
+        pWeight += p * c->getLexeme().getByteLength();
         c = c->getNext();
     }
     return pWeight;
-}
-
-LexemePath* LexemePath::copy() const {
-    LexemePath* theCopy = _CLNEW LexemePath();
-    theCopy->path_begin_ = this->path_begin_;
-    theCopy->path_end_ = this->path_end_;
-    theCopy->payload_length_ = this->payload_length_;
-    auto c = this->getHead();
-    while (c != nullptr) {
-        theCopy->addLexeme(c->getLexeme());
-        c = c->getNext();
-    }
-    return theCopy;
 }
 
 bool LexemePath::operator<(const LexemePath& o) const {

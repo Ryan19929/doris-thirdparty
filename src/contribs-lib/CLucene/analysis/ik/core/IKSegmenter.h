@@ -2,8 +2,8 @@
 #define CLUCENE_IKSEGMENTER_H
 
 #include <iostream>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "AnalyzeContext.h"
 #include "CJKSegmenter.h"
@@ -16,8 +16,8 @@ CL_NS_DEF2(analysis, ik)
 class IKSegmenter {
 public:
     IKSegmenter(lucene::util::Reader* input, std::shared_ptr<Configuration> config);
-    std::shared_ptr<Lexeme> next();
-    void reset(lucene::util::Reader* newInput);
+    std::optional<Lexeme> next();
+    void reset(lucene::util::Reader* newInput, std::shared_ptr<Configuration> config);
     int getLastUselessCharNum();
 
 private:

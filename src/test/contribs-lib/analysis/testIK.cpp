@@ -1613,7 +1613,7 @@ CuSuite* testik(void) {
 //    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
 //    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
 //    SUITE_ADD_TEST(suite, testIKRareCharacters);
-//
+
 //    SUITE_ADD_TEST(suite, testIKMatch);
 //    SUITE_ADD_TEST(suite, testIKMatch2);
 //    SUITE_ADD_TEST(suite, testIKMatchHuge);

@@ -2,6 +2,7 @@
 #define CLUCENE_QUICKSORTSET_H
 
 #include "CLucene/_ApiHeader.h"
+#include "ObjectPool.h"
 #include "Lexeme.h"
 #include <memory>
 
@@ -14,10 +15,14 @@ class CLUCENE_EXPORT QuickSortSet {
 protected:
     class Cell {
     public:
+        Cell() = default;
         explicit Cell(Lexeme&& lexeme) : lexeme_(std::move(lexeme)) {}
-
         ~Cell() = default;
-
+        void reset() {
+            prev_ = nullptr;
+            next_ = nullptr;
+            lexeme_ = Lexeme();
+        }
         bool operator<(const Cell& other) const { return lexeme_ < other.lexeme_; };
         bool operator==(const Cell& other) const { return lexeme_ == other.lexeme_; };
 

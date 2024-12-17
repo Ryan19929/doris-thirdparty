@@ -14,11 +14,8 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
                 // Directly output current crossPath
                 context->addLexemePath(std::move(cross_path));
             } else {
-                // Process ambiguity for current crossPath
-                auto judgeResult = judge(cross_path->getHead(), cross_path->getPathLength());
-
                 // Output ambiguity processing result
-                context->addLexemePath(std::move(judgeResult));
+                context->addLexemePath(judge(cross_path->getHead(), cross_path->getPathLength()));
             }
 
             // Add orgLexeme to new crossPath
@@ -35,9 +32,7 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
         context->addLexemePath(std::move(cross_path));
     } else {
         // Process ambiguity for current crossPath
-        auto headCell = cross_path->getHead();
-        auto judgeResult = judge(headCell, cross_path->getPathLength());
-        context->addLexemePath(std::move(judgeResult));
+        context->addLexemePath(judge(cross_path->getHead(), cross_path->getPathLength()));
     }
 }
 
@@ -62,7 +57,7 @@ std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell,
         forwardPath(c, option);
         pathOptions.insert(std::unique_ptr<LexemePath>(option->copy()));
     }
-    return std::unique_ptr<LexemePath>((*pathOptions.begin())->copy());
+    return std::move(pathOptions.extract(pathOptions.begin()).value());
 }
 
 std::stack<QuickSortSet::Cell*>IKArbitrator::forwardPath(

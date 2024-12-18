@@ -47,6 +47,36 @@ private:
     Dictionary& operator=(const Dictionary&) = delete;
 
 public:
+    void printCollisionStats() const {
+        if(!main_dict_) {
+            std::cout << "字典树未初始化!" << std::endl;
+            return;
+        }
+
+        DictSegment::CollisionStats stats;
+        main_dict_->collectStats(stats);
+
+        if(stats.map_nodes > 0) {
+            stats.avg_load_factor /= stats.map_nodes;
+        }
+
+        std::cout << "\n字典树碰撞统计:\n";
+        std::cout << "总节点数: " << stats.total_nodes << std::endl;
+        std::cout << "数组存储节点数: " << stats.array_nodes << std::endl;
+        std::cout << "哈希表存储节点数: " << stats.map_nodes << std::endl;
+        std::cout << "平均负载因子: " << stats.avg_load_factor << std::endl;
+        std::cout << "最大碰撞数: " << stats.max_collision << std::endl;
+
+        std::cout << "\n碰撞分布:\n";
+        std::cout << "碰撞数\t桶数量\t分布图\n";
+        for(const auto& [collision, count] : stats.bucket_distribution) {
+            std::cout << collision << "\t" << count << "\t";
+            // 简单的柱状图
+            const int scale = std::max(1ul, count / 100);  // 调整比例
+            std::cout << std::string(count/scale, '*');
+            std::cout << std::endl;
+        }
+    }
     static void initial(const Configuration& cfg, bool useExtDict = false) {
         getSingleton(cfg, useExtDict);
     }

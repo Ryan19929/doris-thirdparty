@@ -24,6 +24,50 @@ private:
     std::shared_ptr<DictSegment> lookforSegment(int32_t key_char, bool create_if_missing);
 
 public:
+    // 添加统计结构体
+    struct CollisionStats {
+        size_t total_nodes {0};  // 总节点数
+        size_t array_nodes {0};  // 使用数组存储的节点数
+        size_t map_nodes {0};    // 使用哈希表存储的节点数
+        std::map<size_t, size_t> bucket_distribution; // 哈希桶分布
+        size_t max_collision {0}; // 最大碰撞数
+        double avg_load_factor {0.0}; // 平均负载因子
+    };
+
+    // 收集统计信息的方法
+    void collectStats(CollisionStats& stats) const {
+        stats.total_nodes++;
+
+        if(store_size_ <= ARRAY_LENGTH_LIMIT) {
+            stats.array_nodes++;
+        } else {
+            stats.map_nodes++;
+            // 统计哈希表信息
+            for(size_t i = 0; i < children_map_.bucket_count(); i++) {
+                size_t bucket_size = children_map_.bucket_size(i);
+                if(bucket_size > 0) {
+                    stats.bucket_distribution[bucket_size]++;
+                    stats.max_collision = std::max(stats.max_collision, bucket_size);
+                }
+            }
+            stats.avg_load_factor += children_map_.load_factor();
+        }
+
+        // 递归统计子节点
+        if(store_size_ <= ARRAY_LENGTH_LIMIT) {
+            for(const auto& child : children_array_) {
+                if(child) {
+                    child->collectStats(stats);
+                }
+            }
+        } else {
+            for(const auto& [_, child] : children_map_) {
+                if(child) {
+                    child->collectStats(stats);
+                }
+            }
+        }
+    }
     explicit DictSegment(int32_t key_char);
     ~DictSegment() = default;
 

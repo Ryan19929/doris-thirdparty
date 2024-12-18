@@ -43,11 +43,8 @@ void CJKSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
                                context->getCurrentCharLen(), Lexeme::Type::CNChar,
                                singleCharHit.getCharBegin(), singleCharHit.getCharEnd());
             context->addLexeme(std::move(newLexeme));
-
-            if (singleCharHit.isPrefix()) {
-                tmp_hits_.push_back(singleCharHit);
-            }
-        } else if (singleCharHit.isPrefix()) {
+        }
+        if (singleCharHit.isPrefix()) {
             tmp_hits_.push_back(singleCharHit);
         }
     } else {
@@ -66,5 +63,6 @@ void CJKSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
 }
 
 void CJKSegmenter::reset() {
-    tmp_hits_.clear();
+    std::list<Hit> empty;
+    tmp_hits_.swap(empty);
 }

@@ -16,7 +16,7 @@ AnalyzeContext::AnalyzeContext(std::shared_ptr<Configuration> configuration)
 AnalyzeContext::~AnalyzeContext() = default;
 
 void AnalyzeContext::reset() {
-    buffer_locker_.clear();
+    buffer_locker_ = 0;
     org_lexemes_.clear();
     available_ = 0;
     buffer_offset_ = 0;
@@ -131,15 +131,25 @@ void AnalyzeContext::markBufferOffset() {
 }
 
 void AnalyzeContext::lockBuffer(const std::string& segmenterName) {
-    buffer_locker_.insert(segmenterName);
+    if (segmenterName == "CJK_SEGMENTER")
+        buffer_locker_ |= CJK_SEGMENTER_FLAG;
+    else if (segmenterName == "CN_QUANTIFIER")
+        buffer_locker_ |= CN_QUANTIFIER_FLAG;
+    else if (segmenterName == "LETTER_SEGMENTER")
+        buffer_locker_ |= LETTER_SEGMENTER_FLAG;
 }
 
 void AnalyzeContext::unlockBuffer(const std::string& segmenterName) {
-    buffer_locker_.erase(segmenterName);
+    if (segmenterName == "CJK_SEGMENTER")
+        buffer_locker_ &= ~CJK_SEGMENTER_FLAG;
+    else if (segmenterName == "CN_QUANTIFIER")
+        buffer_locker_ &= ~CN_QUANTIFIER_FLAG;
+    else if (segmenterName == "LETTER_SEGMENTER")
+        buffer_locker_ &= ~LETTER_SEGMENTER_FLAG;
 }
 
 bool AnalyzeContext::isBufferLocked() const {
-    return !buffer_locker_.empty();
+    return buffer_locker_ != 0;
 }
 
 std::optional<Lexeme> AnalyzeContext::getNextLexeme() {

@@ -4,6 +4,7 @@
 #include "CLucene/_ApiHeader.h"
 #include "QuickSortSet.h"
 #include <memory>
+#include <optional>
 
 CL_NS_DEF2(analysis, ik)
 

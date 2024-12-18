@@ -6,6 +6,7 @@
 #include <set>
 #include <memory>
 #include <string>
+#include <optional>
 
 #include "CLucene/_ApiHeader.h"
 #include "CLucene/analysis/ik/cfg/Configuration.h"
@@ -22,6 +23,10 @@ private:
     static const size_t BUFF_SIZE = 4096;
     static const size_t BUFF_EXHAUST_CRITICAL = 100;
 
+    static constexpr uint8_t CJK_SEGMENTER_FLAG = 0x01;      // 0001
+    static constexpr uint8_t CN_QUANTIFIER_FLAG = 0x02;      // 0010
+    static constexpr uint8_t LETTER_SEGMENTER_FLAG = 0x04;   // 0100
+
     // String buffer
     std::string segment_buff_;
     // Character information array
@@ -36,7 +41,8 @@ private:
     size_t last_useless_char_num_;
 
     // Sub-tokenizer lock
-    std::set<std::string> buffer_locker_;
+    uint8_t buffer_locker_{0};
+    //std::set<std::string> buffer_locker_;
     // Original tokenization result set
     QuickSortSet org_lexemes_;
     // LexemePath position index table

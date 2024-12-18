@@ -47,18 +47,18 @@ void DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes, size_t
                     : count;
 
     int32_t ch = typed_runes[unicode_offset].getChar();
-    std::shared_ptr<DictSegment> ds = nullptr;
+    DictSegment* ds = nullptr;
     if (store_size_ <= ARRAY_LENGTH_LIMIT) {
         for (size_t i = 0; i < store_size_ && i < children_array_.size(); i++) {
             if (children_array_[i]->key_char_ == ch) {
-                ds = children_array_[i];
+                ds = children_array_[i].get();
                 break;
             }
         }
     } else {
         auto it = children_map_.find(ch);
         if (it != children_map_.end()) {
-            ds = it->second;
+            ds = it->second.get();
         }
     }
 

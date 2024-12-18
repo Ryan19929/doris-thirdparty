@@ -5,6 +5,7 @@
 #include "ObjectPool.h"
 #include "Lexeme.h"
 #include <memory>
+#include <optional>
 
 CL_NS_DEF2(analysis, ik)
 

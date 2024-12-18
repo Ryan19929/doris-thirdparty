@@ -22,7 +22,6 @@ void QuickSortSet::clear() {
 
 bool QuickSortSet::addLexeme(Lexeme lexeme) {
     auto* new_cell = ObjectPool<Cell>::getInstance().acquire();
-//    auto new_cell = new Cell(std::move(lexeme));
     new_cell->lexeme_ = std::move(lexeme);
 
     if (cell_size_ == 0) {
@@ -33,7 +32,6 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
 
     if (*tail_ == *new_cell) {
         ObjectPool<Cell>::getInstance().release(new_cell);
-//        delete new_cell;
         return false;
     }
 
@@ -77,6 +75,7 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
         cell_size_++;
         return true;
     }
+    ObjectPool<Cell>::getInstance().release(new_cell);
 
     return false;
 }

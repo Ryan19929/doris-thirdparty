@@ -42,6 +42,8 @@ void Dictionary::loadMainDict() {
             loadDictFile(main_dict_, config_->getDictPath() + "/" + extDict, false, "Extra Dict");
         }
     }
+    // printCollisionStats();
+
 }
 
 void Dictionary::loadStopWordDict() {
@@ -108,7 +110,7 @@ Hit Dictionary::matchInQuantifierDict(const CharacterUtil::TypedRuneArray& typed
 void Dictionary::matchWithHit(const CharacterUtil::TypedRuneArray& typed_runes, int current_index,
                               Hit& hit) {
     // 获取已匹配的DictSegment
-    if (auto matchedSegment = hit.getMatchedDictSegment().lock()) {
+    if (auto matchedSegment = hit.getMatchedDictSegment()) {
         matchedSegment->match(typed_runes, current_index, 1, hit);
         return;
     }

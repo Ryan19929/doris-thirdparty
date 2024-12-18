@@ -1,13 +1,14 @@
 #ifndef CLUCENE_CJKSEGMENTER_H
 #define CLUCENE_CJKSEGMENTER_H
 
-#include <boost/pool/pool_alloc.hpp>
+
 #include <list>
 #include <memory>
 #include <string>
 
 #include "AnalyzeContext.h"
 #include "CLucene/analysis/ik/dic/Dictionary.h"
+#include "CLucene/analysis/ik/util/ObjectAllocator.h"
 #include "CharacterUtil.h"
 #include "ISegmenter.h"
 
@@ -16,7 +17,7 @@ CL_NS_DEF2(analysis, ik)
 class CJKSegmenter : public ISegmenter {
 private:
     static const std::string SEGMENTER_NAME;
-    std::list<Hit, boost::fast_pool_allocator<Hit>> tmp_hits_;
+    std::list<Hit,lucene::analysis::ik::SmallObjectAllocator<Hit>> tmp_hits_;
 
 public:
     CJKSegmenter();

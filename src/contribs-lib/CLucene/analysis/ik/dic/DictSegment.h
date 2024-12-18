@@ -77,7 +77,6 @@ public:
     DictSegment& operator=(DictSegment&&) noexcept = default;
 
     bool hasNextNode() const;
-    Hit match(const CharacterUtil::TypedRuneArray& typed_runes);
 
     Hit match(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset,
               size_t count);

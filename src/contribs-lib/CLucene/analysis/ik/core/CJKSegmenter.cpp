@@ -63,6 +63,5 @@ void CJKSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
 }
 
 void CJKSegmenter::reset() {
-    std::list<Hit> empty;
-    tmp_hits_.swap(empty);
+    tmp_hits_.clear();
 }

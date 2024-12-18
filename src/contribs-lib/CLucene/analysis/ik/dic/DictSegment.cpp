@@ -15,13 +15,6 @@ bool DictSegment::hasNextNode() const {
     return store_size_ > 0;
 }
 
-Hit DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes) {
-    Hit search_hit;
-    search_hit.setByteBegin(0);
-    search_hit.setCharBegin(0);
-    match(typed_runes, 0, typed_runes.size(), search_hit);
-    return search_hit;
-}
 
 Hit DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset,
                        size_t count) {

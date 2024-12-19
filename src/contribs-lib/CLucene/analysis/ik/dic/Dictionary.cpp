@@ -42,8 +42,6 @@ void Dictionary::loadMainDict() {
             loadDictFile(main_dict_, config_->getDictPath() + "/" + extDict, false, "Extra Dict");
         }
     }
-    // printCollisionStats();
-
 }
 
 void Dictionary::loadStopWordDict() {

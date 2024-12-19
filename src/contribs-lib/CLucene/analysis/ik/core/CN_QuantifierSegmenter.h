@@ -6,6 +6,7 @@
 
 #include "AnalyzeContext.h"
 #include "ISegmenter.h"
+#include "CLucene/analysis/ik/util/AllocatorManager.h"
 CL_NS_DEF2(analysis, ik)
 
 class CN_QuantifierSegmenter : public ISegmenter {
@@ -28,7 +29,7 @@ private:
 
     int number_start_;
     int number_end_;
-    std::vector<Hit> count_hits_;
+    IKVector<Hit> count_hits_;
 };
 CL_NS_END2
 #endif //CLUCENE_CN_QUANTIFIERSEGMENTER_H

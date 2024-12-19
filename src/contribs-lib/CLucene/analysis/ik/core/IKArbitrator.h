@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "AnalyzeContext.h"
+#include "CLucene/analysis/ik/util/AllocatorManager.h"
 #include "LexemePath.h"
 #include "QuickSortSet.h"
 
@@ -20,8 +21,8 @@ public:
 private:
     std::unique_ptr<LexemePath> judge(QuickSortSet::Cell* lexeme_cell, size_t full_text_length);
 
-    std::stack<QuickSortSet::Cell*> forwardPath(QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath>  path_option);
-
+    IKStack<QuickSortSet::Cell*> forwardPath(QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath>  path_option);
+    void forwardPath_void(QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath> path_option);
     void backPath(const Lexeme& lexeme, std::shared_ptr<LexemePath> path_option);
 };
 

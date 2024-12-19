@@ -8,7 +8,7 @@
 
 #include "AnalyzeContext.h"
 #include "CLucene/analysis/ik/dic/Dictionary.h"
-#include "CLucene/analysis/ik/util/ObjectAllocator.h"
+#include "CLucene/analysis/ik/util/AllocatorManager.h"
 #include "CharacterUtil.h"
 #include "ISegmenter.h"
 
@@ -17,7 +17,7 @@ CL_NS_DEF2(analysis, ik)
 class CJKSegmenter : public ISegmenter {
 private:
     static const std::string SEGMENTER_NAME;
-    std::list<Hit,lucene::analysis::ik::SmallObjectAllocator<Hit>> tmp_hits_;
+    IKList<Hit> tmp_hits_;
 
 public:
     CJKSegmenter();

@@ -7,6 +7,8 @@
 
 #include "AnalyzeContext.h"
 #include "ISegmenter.h"
+#include "CLucene/analysis/ik/util/AllocatorManager.h"
+
 CL_NS_DEF2(analysis, ik)
 
 class LetterSegmenter : public ISegmenter {
@@ -32,8 +34,8 @@ private:
     int arabic_start_{-1};
     int arabic_end_{-1};
 
-    std::vector<char> letter_connectors_;
-    std::vector<char> num_connectors_;
+    IKVector<char> letter_connectors_;
+    IKVector<char> num_connectors_;
 };
 CL_NS_END2
 

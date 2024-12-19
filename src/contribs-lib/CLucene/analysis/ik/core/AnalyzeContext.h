@@ -11,6 +11,7 @@
 #include "CLucene/_ApiHeader.h"
 #include "CLucene/analysis/ik/cfg/Configuration.h"
 #include "CLucene/analysis/ik/dic/Dictionary.h"
+#include "CLucene/analysis/ik/util/AllocatorManager.h"
 #include "CLucene/util/CLStreams.h"
 #include "CharacterUtil.h"
 #include "LexemePath.h"
@@ -46,9 +47,9 @@ private:
     // Original tokenization result set
     QuickSortSet org_lexemes_;
     // LexemePath position index table
-    std::map<size_t, std::unique_ptr<LexemePath>> path_map_;
+    IKMap<size_t, std::unique_ptr<LexemePath>> path_map_;
     // Final tokenization result set
-    std::list<Lexeme> results_;
+    IKList<Lexeme> results_;
     // Tokenizer configuration
     std::shared_ptr<Configuration> config_;
 

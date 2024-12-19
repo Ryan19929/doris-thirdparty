@@ -6,19 +6,19 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
     auto org_lexemes = context->getOrgLexemes();
     auto org_lexeme = org_lexemes->pollFirst();
     auto cross_path = std::make_unique<LexemePath>();
+
+    auto process_path = [&](std::unique_ptr<LexemePath>& path) {
+        if (path->size() == 1 || !use_smart) {
+            context->addLexemePath(std::move(path));
+        } else {
+            context->addLexemePath(judge(path->getHead(), path->getPathLength()));
+        }
+    };
+
+
     while (org_lexeme) {
         if (!cross_path->addCrossLexeme(*org_lexeme)) {
-            // Find the next non-intersecting crossPath
-            if (cross_path->size() == 1 || !use_smart) {
-                // No ambiguity in crossPath or no ambiguity processing needed
-                // Directly output current crossPath
-                context->addLexemePath(std::move(cross_path));
-            } else {
-                // Output ambiguity processing result
-                context->addLexemePath(judge(cross_path->getHead(), cross_path->getPathLength()));
-            }
-
-            // Add orgLexeme to new crossPath
+            process_path(cross_path);
             cross_path = std::make_unique<LexemePath>();
             cross_path->addCrossLexeme(*org_lexeme);
         }
@@ -26,26 +26,16 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
     }
 
     // Process the final path
-    if (cross_path->size() == 1 || !use_smart) {
-        // No ambiguity in crossPath or no ambiguity processing needed
-        // Directly output current crossPath
-        context->addLexemePath(std::move(cross_path));
-    } else {
-        // Process ambiguity for current crossPath
-        context->addLexemePath(judge(cross_path->getHead(), cross_path->getPathLength()));
-    }
+    process_path(cross_path);
 }
 
 std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell, size_t full_text_length) {
-    // Path options collection
-    std::set<std::unique_ptr<LexemePath>, LexemePath::LexemePathPtrCompare> pathOptions;    // Candidate result path
+    std::unique_ptr<LexemePath> best_path;
     auto option = std::make_shared<LexemePath>();
 
     // Traverse crossPath once and return the stack of conflicting Lexemes
     auto lexemeStack = forwardPath(lexeme_cell, option);
-
-    // Current lexeme chain is not ideal, add to path options collection
-    pathOptions.insert(std::unique_ptr<LexemePath>(option->copy()));
+    best_path = std::unique_ptr<LexemePath>(option->copy());
 
     // Process ambiguous words if they exist
     while (!lexemeStack.empty()) {
@@ -54,22 +44,37 @@ std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell,
         // Rollback lexeme chain
         backPath(c->getLexeme(), option);
         // Start from ambiguous word position, recursively generate alternatives
-        forwardPath(c, option);
-        pathOptions.insert(std::unique_ptr<LexemePath>(option->copy()));
+        forwardPath_void(c, option);
+        if (*option < *best_path) {
+            best_path.reset(option->copy());
+        }
     }
-    return std::move(pathOptions.extract(pathOptions.begin()).value());
+    return best_path;
 }
 
-std::stack<QuickSortSet::Cell*>IKArbitrator::forwardPath(
+
+void IKArbitrator::forwardPath_void(QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath> path_option) {
+    auto current_cell = lexeme_cell;
+
+    while (current_cell) {
+        path_option->addNotCrossLexeme(current_cell->getLexeme());
+        current_cell = current_cell->getNext();
+    }
+}
+
+IKStack<QuickSortSet::Cell*> IKArbitrator::forwardPath(
         QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath> path_option) {
     // Stack of conflicting Lexemes
-    std::stack<QuickSortSet::Cell*> conflictStack;
+//    total_calls_++;
+    IKStack<QuickSortSet::Cell*> conflictStack;
+
     auto current_cell = lexeme_cell;
 
     while (current_cell) {
         if (!path_option->addNotCrossLexeme(current_cell->getLexeme())) {
             // Lexeme intersection, if addition fails, push to lexemeStack
             conflictStack.push(current_cell);
+
         }
         current_cell = current_cell->getNext();
     }

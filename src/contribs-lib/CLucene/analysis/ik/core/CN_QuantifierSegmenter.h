@@ -17,14 +17,14 @@ public:
     CN_QuantifierSegmenter();
     ~CN_QuantifierSegmenter() override = default;
 
-    void analyze(std::shared_ptr<AnalyzeContext> context) override;
+    void analyze(AnalyzeContext& context) override;
     void reset() override;
 
 private:
-    void processCNumber(std::shared_ptr<AnalyzeContext> context);
-    void processCount(std::shared_ptr<AnalyzeContext> context);
-    bool needCountScan(std::shared_ptr<AnalyzeContext> context);
-    void outputNumLexeme(std::shared_ptr<AnalyzeContext> context);
+    void processCNumber(AnalyzeContext& context);
+    void processCount(AnalyzeContext& context);
+    bool needCountScan(AnalyzeContext& context);
+    void outputNumLexeme(AnalyzeContext& context);
 
     int number_start_;
     int number_end_;

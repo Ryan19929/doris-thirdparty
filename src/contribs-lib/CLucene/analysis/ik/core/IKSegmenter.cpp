@@ -31,7 +31,7 @@ std::optional<Lexeme> IKSegmenter::next() {
             context_->initCursor();
             do {
                 for (const auto& segmenter : segmenters_) {
-                    segmenter->analyze(context_);
+                    segmenter->analyze(*context_);
                 }
                 if (context_->needRefillBuffer()) {
                     break;
@@ -41,7 +41,7 @@ std::optional<Lexeme> IKSegmenter::next() {
                 segmenter->reset();
             }
         }
-        arbitrator_.process(context_, config_->isUseSmart());
+        arbitrator_.process(*context_, config_->isUseSmart());
         context_->outputToResult();
         context_->markBufferOffset();
     }

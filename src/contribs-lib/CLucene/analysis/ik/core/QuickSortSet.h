@@ -5,7 +5,6 @@
 #include <optional>
 
 #include "CLucene/_ApiHeader.h"
-#include "CLucene/analysis/ik/util/IKObjectPool.h"
 #include "Lexeme.h"
 
 CL_NS_DEF2(analysis, ik)
@@ -20,11 +19,7 @@ protected:
         Cell() = default;
         explicit Cell(Lexeme&& lexeme) : lexeme_(std::move(lexeme)) {}
         ~Cell() = default;
-        void reset() {
-            prev_ = nullptr;
-            next_ = nullptr;
-            lexeme_ = Lexeme();
-        }
+
         bool operator<(const Cell& other) const { return lexeme_ < other.lexeme_; };
         bool operator==(const Cell& other) const { return lexeme_ == other.lexeme_; };
 

@@ -21,7 +21,7 @@ private:
 public:
     CJKSegmenter();
 
-    void analyze(std::shared_ptr<AnalyzeContext> context) override;
+    void analyze(AnalyzeContext& context) override;
     void reset() override;
 };
 

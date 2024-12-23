@@ -17,22 +17,22 @@ public:
     LetterSegmenter();
     ~LetterSegmenter() override = default;
 
-    void analyze(shared_ptr<AnalyzeContext> context) override;
+    void analyze(AnalyzeContext& context) override;
     void reset() override;
 
 private:
-    bool processEnglishLetter(shared_ptr<AnalyzeContext> context);
-    bool processArabicLetter(shared_ptr<AnalyzeContext> context);
-    bool processMixLetter(shared_ptr<AnalyzeContext> context);
+    bool processEnglishLetter(AnalyzeContext& context);
+    bool processArabicLetter(AnalyzeContext& context);
+    bool processMixLetter(AnalyzeContext& context);
     bool isLetterConnector(char input);
     bool isNumConnector(char input);
 
-    int start_{-1};
-    int end_{-1};
-    int english_start_{-1};
-    int english_end_{-1};
-    int arabic_start_{-1};
-    int arabic_end_{-1};
+    int start_ {-1};
+    int end_ {-1};
+    int english_start_ {-1};
+    int english_end_ {-1};
+    int arabic_start_ {-1};
+    int arabic_end_ {-1};
 
     IKVector<char> letter_connectors_;
     IKVector<char> num_connectors_;

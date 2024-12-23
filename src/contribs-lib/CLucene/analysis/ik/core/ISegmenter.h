@@ -11,7 +11,7 @@ public:
 
     // Read the next possible token from the analyzer
     // param context Segmentation algorithm context
-    virtual void analyze(std::shared_ptr<AnalyzeContext> context) = 0;
+    virtual void analyze(AnalyzeContext& context) = 0;
 
     // Reset the sub-analyzer state
     virtual void reset() = 0;

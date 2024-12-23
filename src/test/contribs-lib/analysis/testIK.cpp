@@ -63,7 +63,7 @@ void testCJKSegmenter(CuTest* tc) {
             std::make_unique<lucene::util::SStringReader<char>>(testStr1, strlen(testStr1), false);
     context->fillBuffer(reader1.get());
 
-    segmenter.analyze(context);
+    segmenter.analyze(*context);
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
@@ -78,10 +78,10 @@ void testCJKSegmenter(CuTest* tc) {
     context->fillBuffer(reader2.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
@@ -97,10 +97,10 @@ void testCJKSegmenter(CuTest* tc) {
     context->fillBuffer(reader3.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
@@ -120,9 +120,9 @@ void testCJKSegmenter(CuTest* tc) {
     context->fillBuffer(reader4.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
@@ -158,8 +158,8 @@ void testLetterSegmenter(CuTest* tc) {
             std::make_unique<lucene::util::SStringReader<char>>(testStr1, strlen(testStr1), false);
     context->fillBuffer(reader1.get());
 
-    segmenter.analyze(context);
-    arbitrator.process(context, cfg->isUseSmart());
+    segmenter.analyze(*context);
+    arbitrator.process(*context, cfg->isUseSmart());
 
     context->outputToResult();
 
@@ -175,10 +175,10 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader2.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
@@ -200,10 +200,10 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader3.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
@@ -220,10 +220,10 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader4.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
@@ -240,10 +240,10 @@ void testLetterSegmenter(CuTest* tc) {
     context->fillBuffer(reader5.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
 
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
@@ -267,9 +267,9 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->fillBuffer(reader2.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
 
     context->outputToResult();
 
@@ -297,9 +297,9 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->fillBuffer(reader3.get());
 
     do {
-        segmenter.analyze(context);
+        segmenter.analyze(*context);
     } while (context->moveCursor());
-    arbitrator.process(context, cfg->isUseSmart());
+    arbitrator.process(*context, cfg->isUseSmart());
     context->outputToResult();
 
     lexeme = context->getNextLexeme();

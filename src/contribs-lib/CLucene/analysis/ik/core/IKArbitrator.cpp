@@ -2,16 +2,16 @@
 
 CL_NS_USE2(analysis, ik)
 
-void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_smart) {
-    auto org_lexemes = context->getOrgLexemes();
+void IKArbitrator::process(AnalyzeContext& context, bool use_smart) {
+    auto org_lexemes = context.getOrgLexemes();
     auto org_lexeme = org_lexemes->pollFirst();
     auto cross_path = std::make_unique<LexemePath>();
 
     auto process_path = [&](std::unique_ptr<LexemePath>& path) {
         if (path->size() == 1 || !use_smart) {
-            context->addLexemePath(std::move(path));
+            context.addLexemePath(std::move(path));
         } else {
-            context->addLexemePath(judge(path->getHead(), path->getPathLength()));
+            context.addLexemePath(judge(path->getHead(), path->getPathLength()));
         }
     };
 

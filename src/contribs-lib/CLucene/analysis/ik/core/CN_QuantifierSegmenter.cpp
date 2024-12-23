@@ -21,14 +21,14 @@ CN_QuantifierSegmenter::CN_QuantifierSegmenter() {
     }
 }
 
-void CN_QuantifierSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
+void CN_QuantifierSegmenter::analyze(AnalyzeContext& context) {
     processCNumber(context);
     processCount(context);
 
     if (number_start_ == -1 && number_end_ == -1 && count_hits_.empty()) {
-        context->unlockBuffer(SEGMENTER_NAME);
+        context.unlockBuffer(SEGMENTER_NAME);
     } else {
-        context->lockBuffer(SEGMENTER_NAME);
+        context.lockBuffer(SEGMENTER_NAME);
     }
 }
 
@@ -38,18 +38,18 @@ void CN_QuantifierSegmenter::reset() {
     count_hits_.clear();
 }
 
-void CN_QuantifierSegmenter::processCNumber(std::shared_ptr<AnalyzeContext> context) {
+void CN_QuantifierSegmenter::processCNumber(AnalyzeContext& context) {
     if (number_start_ == -1 && number_end_ == -1) {
-        char32_t currentChar = context->getCurrentChar();
-        if (CharacterUtil::CHAR_CHINESE == context->getCurrentCharType() &&
+        char32_t currentChar = context.getCurrentChar();
+        if (CharacterUtil::CHAR_CHINESE == context.getCurrentCharType() &&
             currentChar < UNICODE_MAX && chinese_number_chars_table_[currentChar]) {
-            number_start_ = context->getCursor();
-            number_end_ = context->getCursor();
+            number_start_ = context.getCursor();
+            number_end_ = context.getCursor();
         }
     } else {
-        if (CharacterUtil::CHAR_CHINESE == context->getCurrentCharType() &&
-            chinese_number_chars_table_[context->getCurrentChar()] != 0) {
-            number_end_ = context->getCursor();
+        if (CharacterUtil::CHAR_CHINESE == context.getCurrentCharType() &&
+            chinese_number_chars_table_[context.getCurrentChar()] != 0) {
+            number_end_ = context.getCursor();
         } else {
             outputNumLexeme(context);
             number_start_ = -1;
@@ -57,29 +57,29 @@ void CN_QuantifierSegmenter::processCNumber(std::shared_ptr<AnalyzeContext> cont
         }
     }
 
-    if (context->isBufferConsumed() && (number_start_ != -1 && number_end_ != -1)) {
+    if (context.isBufferConsumed() && (number_start_ != -1 && number_end_ != -1)) {
         outputNumLexeme(context);
         number_start_ = -1;
         number_end_ = -1;
     }
 }
 
-void CN_QuantifierSegmenter::processCount(std::shared_ptr<AnalyzeContext> context) {
+void CN_QuantifierSegmenter::processCount(AnalyzeContext& context) {
     if (!needCountScan(context)) {
         return;
     }
-    const auto& typedRuneArray = context->getTypedRuneArray();
+    const auto& typedRuneArray = context.getTypedRuneArray();
 
-    if (CharacterUtil::CHAR_CHINESE == context->getCurrentCharType()) {
+    if (CharacterUtil::CHAR_CHINESE == context.getCurrentCharType()) {
         if (!count_hits_.empty()) {
             auto it = count_hits_.begin();
             while (it != count_hits_.end()) {
                 Dictionary::getSingleton()->matchWithHit(typedRuneArray, it->getCharEnd(), *it);
                 if (it->isMatch()) {
-                    Lexeme newLexeme(context->getBufferOffset(), it->getByteBegin(),
+                    Lexeme newLexeme(context.getBufferOffset(), it->getByteBegin(),
                                      it->getByteEnd() - it->getByteBegin(), Lexeme::Type::Count,
                                      it->getCharBegin(), it->getCharEnd());
-                    context->addLexeme(std::move(newLexeme));
+                    context.addLexeme(std::move(newLexeme));
                     if (!it->isPrefix()) {
                         it = count_hits_.erase(it);
                     } else {
@@ -94,12 +94,12 @@ void CN_QuantifierSegmenter::processCount(std::shared_ptr<AnalyzeContext> contex
         }
 
         auto singleCharHit = Dictionary::getSingleton()->matchInQuantifierDict(
-                typedRuneArray, context->getCursor(), 1);
+                typedRuneArray, context.getCursor(), 1);
         if (singleCharHit.isMatch()) {
-            Lexeme newLexeme(context->getBufferOffset(), context->getCurrentCharOffset(),
-                             context->getCurrentCharLen(), Lexeme::Type::Count,
-                             context->getCursor(), context->getCursor());
-            context->addLexeme(std::move(newLexeme));
+            Lexeme newLexeme(context.getBufferOffset(), context.getCurrentCharOffset(),
+                             context.getCurrentCharLen(), Lexeme::Type::Count,
+                             context.getCursor(), context.getCursor());
+            context.addLexeme(std::move(newLexeme));
 
             if (singleCharHit.isPrefix()) {
                 count_hits_.push_back(singleCharHit);
@@ -111,19 +111,19 @@ void CN_QuantifierSegmenter::processCount(std::shared_ptr<AnalyzeContext> contex
         count_hits_.clear();
     }
 
-    if (context->isBufferConsumed()) {
+    if (context.isBufferConsumed()) {
         count_hits_.clear();
     }
 }
 
-bool CN_QuantifierSegmenter::needCountScan(std::shared_ptr<AnalyzeContext> context) {
+bool CN_QuantifierSegmenter::needCountScan(AnalyzeContext& context) {
     if ((number_start_ != -1 && number_end_ != -1) || !count_hits_.empty()) {
         return true;
     } else {
-        if (!context->getOrgLexemes()->isEmpty()) {
-            auto l = context->getOrgLexemes()->peekLast();
+        if (!context.getOrgLexemes()->isEmpty()) {
+            auto l = context.getOrgLexemes()->peekLast();
             if ((l->getType() == Lexeme::Type::CNum || l->getType() == Lexeme::Type::Arabic) &&
-                (l->getCharEnd() + 1 == context->getCursor())) {
+                (l->getCharEnd() + 1 == context.getCursor())) {
                 return true;
             }
         }
@@ -131,13 +131,13 @@ bool CN_QuantifierSegmenter::needCountScan(std::shared_ptr<AnalyzeContext> conte
     return false;
 }
 
-void CN_QuantifierSegmenter::outputNumLexeme(std::shared_ptr<AnalyzeContext> context) {
+void CN_QuantifierSegmenter::outputNumLexeme(AnalyzeContext& context) {
     if (number_start_ > -1 && number_end_ > -1) {
-        const auto& typedRuneArray = context->getTypedRuneArray();
+        const auto& typedRuneArray = context.getTypedRuneArray();
 
-        Lexeme newLexeme(context->getBufferOffset(), typedRuneArray[number_start_].offset,
+        Lexeme newLexeme(context.getBufferOffset(), typedRuneArray[number_start_].offset,
                          (number_end_ - number_start_ + 1) * 3, Lexeme::Type::CNum, number_start_,
                          number_end_);
-        context->addLexeme(std::move(newLexeme));
+        context.addLexeme(std::move(newLexeme));
     }
 }

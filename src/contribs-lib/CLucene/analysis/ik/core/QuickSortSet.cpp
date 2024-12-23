@@ -11,7 +11,7 @@ QuickSortSet::~QuickSortSet() {
 void QuickSortSet::clear() {
     while (head_) {
         Cell* next = head_->next_;
-        IKObjectPool<Cell>::getInstance().release(head_);
+        delete head_;
         head_ = next;
     }
     tail_ = nullptr;
@@ -19,8 +19,7 @@ void QuickSortSet::clear() {
 }
 
 bool QuickSortSet::addLexeme(Lexeme lexeme) {
-    auto* new_cell = IKObjectPool<Cell>::getInstance().acquire();
-    new_cell->lexeme_ = std::move(lexeme);
+    auto* new_cell = new Cell(std::move(lexeme));
 
     if (cell_size_ == 0) {
         head_ = tail_ = new_cell;
@@ -29,11 +28,10 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
     }
 
     if (*tail_ == *new_cell) {
-        IKObjectPool<Cell>::getInstance().release(new_cell);
+        delete new_cell;
         return false;
     }
 
-    //  词元插入到链表尾部
     if (*new_cell < *tail_) {
         tail_->next_ = new_cell;
         new_cell->prev_ = tail_;
@@ -42,7 +40,6 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
         return true;
     }
 
-    // 词元插入到链表头部
     if (*head_ < *new_cell) {
         head_->prev_ = new_cell;
         new_cell->next_ = head_;
@@ -51,15 +48,13 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
         return true;
     }
 
-    // 从尾部上逆插入
     auto index = tail_;
     while (index && *index < *new_cell) {
         index = index->prev_;
     }
 
     if (index && *index == *new_cell) {
-        //delete new_cell;
-        IKObjectPool<Cell>::getInstance().release(new_cell);
+        delete new_cell;
         return false;
     }
 
@@ -73,7 +68,7 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
         cell_size_++;
         return true;
     }
-    IKObjectPool<Cell>::getInstance().release(new_cell);
+    delete new_cell;
 
     return false;
 }
@@ -93,7 +88,7 @@ std::optional<Lexeme> QuickSortSet::pollFirst() {
     else
         tail_ = nullptr;
 
-    IKObjectPool<Cell>::getInstance().release(old_head);
+    delete old_head;
     --cell_size_;
     return result;
 }
@@ -113,7 +108,7 @@ std::optional<Lexeme> QuickSortSet::pollLast() {
     else
         head_ = nullptr;
 
-    IKObjectPool<Cell>::getInstance().release(old_tail);
+    delete old_tail;
     --cell_size_;
     return result;
 }

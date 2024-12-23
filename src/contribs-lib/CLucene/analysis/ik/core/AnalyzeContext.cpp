@@ -66,8 +66,9 @@ void AnalyzeContext::addLexeme(Lexeme lexeme) {
 }
 
 void AnalyzeContext::addLexemePath(std::unique_ptr<LexemePath> path) {
-    if (path != nullptr) {
-        path_map_[path->getPathBegin()] = std::move(path);
+    if (path) {
+        auto begin = path->getPathBegin();
+        path_map_.emplace(begin, std::move(path));
     }
 }
 

@@ -16,7 +16,7 @@ class IKArbitrator {
 public:
     IKArbitrator() = default;
 
-    void process(std::shared_ptr<AnalyzeContext> context, bool use_smart);
+    void process(AnalyzeContext& context, bool use_smart);
 
 private:
     std::unique_ptr<LexemePath> judge(QuickSortSet::Cell* lexeme_cell, size_t full_text_length);

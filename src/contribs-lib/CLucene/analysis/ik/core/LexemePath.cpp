@@ -6,6 +6,35 @@ CL_NS_DEF2(analysis, ik)
 
 LexemePath::LexemePath() : path_begin_(-1), path_end_(-1), payload_length_(0) {}
 
+LexemePath::LexemePath(const LexemePath& other)
+        : QuickSortSet(),
+          path_begin_(other.path_begin_),
+          path_end_(other.path_end_),
+          payload_length_(other.payload_length_) {
+    auto c = other.getHead();
+    while (c != nullptr) {
+        addLexeme(c->getLexeme());
+        c = c->getNext();
+    }
+}
+
+LexemePath::LexemePath(LexemePath&& other) noexcept
+        : QuickSortSet(),
+          path_begin_(other.path_begin_),
+          path_end_(other.path_end_),
+          payload_length_(other.payload_length_) {
+    head_ = other.head_;
+    tail_ = other.tail_;
+    cell_size_ = other.cell_size_;
+
+    other.head_ = nullptr;
+    other.tail_ = nullptr;
+    other.cell_size_ = 0;
+    other.path_begin_ = -1;
+    other.path_end_ = -1;
+    other.payload_length_ = 0;
+}
+
 bool LexemePath::addCrossLexeme(const Lexeme& lexeme) {
     if (isEmpty()) {
         addLexeme(lexeme);
@@ -94,19 +123,6 @@ size_t LexemePath::getPWeight() const {
         c = c->getNext();
     }
     return pWeight;
-}
-
-LexemePath* LexemePath::copy() const {
-    LexemePath* theCopy = _CLNEW LexemePath();
-    theCopy->path_begin_ = this->path_begin_;
-    theCopy->path_end_ = this->path_end_;
-    theCopy->payload_length_ = this->payload_length_;
-    auto c = this->getHead();
-    while (c != nullptr) {
-        theCopy->addLexeme(c->getLexeme());
-        c = c->getNext();
-    }
-    return theCopy;
 }
 
 bool LexemePath::operator<(const LexemePath& o) const {

@@ -30,23 +30,20 @@ void IKArbitrator::process(AnalyzeContext& context, bool use_smart) {
 
 std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell,
                                                 size_t full_text_length) {
-    std::unique_ptr<LexemePath> best_path;
     auto option = std::make_shared<LexemePath>();
 
     // Traverse crossPath once and return the stack of conflicting Lexemes
     auto lexemeStack = forwardPath(lexeme_cell, option);
-    best_path = std::unique_ptr<LexemePath>(option->copy());
+    auto best_path = std::make_unique<LexemePath>(*option);
 
     // Process ambiguous words if they exist
     while (!lexemeStack.empty()) {
         auto c = lexemeStack.top();
         lexemeStack.pop();
-        // Rollback lexeme chain
         backPath(c->getLexeme(), option);
-        // Start from ambiguous word position, recursively generate alternatives
         forwardPath_void(c, option);
         if (*option < *best_path) {
-            best_path.reset(option->copy());
+            best_path = std::make_unique<LexemePath>(*option);
         }
     }
     return best_path;

@@ -12,6 +12,8 @@ CL_NS_DEF2(analysis, ik)
 class CLUCENE_EXPORT LexemePath : public QuickSortSet {
 public:
     LexemePath();
+    LexemePath(const LexemePath& other);
+    LexemePath(LexemePath&& other) noexcept;
 
     bool addCrossLexeme(const Lexeme& lexeme);
     bool addNotCrossLexeme(const Lexeme& lexeme);
@@ -26,8 +28,6 @@ public:
 
     size_t getXWeight() const;
     size_t getPWeight() const;
-
-    LexemePath* copy() const;
 
     bool operator<(const LexemePath& other) const;
     bool operator==(const LexemePath& other) const;

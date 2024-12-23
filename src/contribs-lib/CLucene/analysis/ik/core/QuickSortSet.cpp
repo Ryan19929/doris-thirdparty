@@ -4,6 +4,46 @@
 
 CL_NS_DEF2(analysis, ik)
 
+QuickSortSet::Cell* QuickSortSet::free_list_ = nullptr;
+QuickSortSet::Cell QuickSortSet::pool_[POOL_SIZE];
+bool QuickSortSet::pool_initialized_ = false;
+
+void QuickSortSet::initPool() {
+    if (pool_initialized_) return;
+
+    for (size_t i = 0; i < POOL_SIZE - 1; ++i) {
+        pool_[i].next_ = &pool_[i + 1];
+    }
+    pool_[POOL_SIZE - 1].next_ = nullptr;
+    free_list_ = &pool_[0];
+    pool_initialized_ = true;
+}
+
+QuickSortSet::Cell* QuickSortSet::allocateCell() {
+    if (!pool_initialized_) {
+        initPool();
+    }
+
+    if (free_list_) {
+        Cell* cell = free_list_;
+        free_list_ = free_list_->next_;
+        cell->next_ = nullptr;
+        cell->prev_ = nullptr;
+        return cell;
+    }
+
+    return new Cell();
+}
+
+void QuickSortSet::deallocateCell(Cell* cell) {
+    if (cell >= pool_ && cell < pool_ + POOL_SIZE) {
+        cell->next_ = free_list_;
+        free_list_ = cell;
+    } else {
+        delete cell;
+    }
+}
+
 QuickSortSet::~QuickSortSet() {
     clear();
 }
@@ -11,7 +51,7 @@ QuickSortSet::~QuickSortSet() {
 void QuickSortSet::clear() {
     while (head_) {
         Cell* next = head_->next_;
-        delete head_;
+        deallocateCell(head_);
         head_ = next;
     }
     tail_ = nullptr;
@@ -19,7 +59,8 @@ void QuickSortSet::clear() {
 }
 
 bool QuickSortSet::addLexeme(Lexeme lexeme) {
-    auto* new_cell = new Cell(std::move(lexeme));
+    Cell* new_cell = allocateCell();
+    new_cell->lexeme_ = std::move(lexeme);
 
     if (cell_size_ == 0) {
         head_ = tail_ = new_cell;
@@ -28,7 +69,7 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
     }
 
     if (*tail_ == *new_cell) {
-        delete new_cell;
+        deallocateCell(new_cell);
         return false;
     }
 
@@ -54,7 +95,7 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
     }
 
     if (index && *index == *new_cell) {
-        delete new_cell;
+        deallocateCell(new_cell);
         return false;
     }
 
@@ -68,7 +109,7 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
         cell_size_++;
         return true;
     }
-    delete new_cell;
+    deallocateCell(new_cell);
 
     return false;
 }
@@ -88,7 +129,7 @@ std::optional<Lexeme> QuickSortSet::pollFirst() {
     else
         tail_ = nullptr;
 
-    delete old_head;
+    deallocateCell(old_head);
     --cell_size_;
     return result;
 }
@@ -108,7 +149,7 @@ std::optional<Lexeme> QuickSortSet::pollLast() {
     else
         head_ = nullptr;
 
-    delete old_tail;
+    deallocateCell(old_tail);
     --cell_size_;
     return result;
 }

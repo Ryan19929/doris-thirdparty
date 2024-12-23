@@ -6,7 +6,6 @@
 #include <string>
 
 #include "CLucene/_ApiHeader.h"
-#include "CLucene/analysis/ik/util/IKObjectPool.h"
 #include "CharacterUtil.h"
 
 CL_NS_DEF2(analysis, ik)

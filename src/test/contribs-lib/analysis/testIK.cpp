@@ -1561,7 +1561,6 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
     analyzer->initDict("./ik-dict");
     analyzer->setStem(false);
     // 记录开始时间
-//    Dictionary::getSingleton()->printStats();
     uint64_t start = Misc::currentTimeMillis();
 
     // 执行分词
@@ -1597,24 +1596,24 @@ void testFileIK(CuTest* tc) {
 CuSuite* testik(void) {
     CuSuite* suite = CuSuiteNew(_T("CLucene IK Test"));
 
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
-//    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
-//
-//    SUITE_ADD_TEST(suite, testCharacterUtil);
-//    SUITE_ADD_TEST(suite, testCJKSegmenter);
-//    SUITE_ADD_TEST(suite, testLetterSegmenter);
-//    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
-//    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
-//    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
-//
-//    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
-//    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
-//    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
-//    SUITE_ADD_TEST(suite, testIKRareCharacters);
-//
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
+
+    SUITE_ADD_TEST(suite, testCharacterUtil);
+    SUITE_ADD_TEST(suite, testCJKSegmenter);
+    SUITE_ADD_TEST(suite, testLetterSegmenter);
+    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
+    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
+    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
+
+    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
+    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
+    SUITE_ADD_TEST(suite, testIKRareCharacters);
+
 //    SUITE_ADD_TEST(suite, testIKMatch);
 //    SUITE_ADD_TEST(suite, testIKMatch2);
 //    SUITE_ADD_TEST(suite, testIKMatchHuge);

@@ -130,35 +130,6 @@ bool Dictionary::isStopWord(const CharacterUtil::TypedRuneArray& typed_runes, si
     return result.isMatch();
 }
 
-void Dictionary::printStats() const {
-    std::cout << "\n词典树统计信息:" << std::endl;
 
-    auto main_stats = main_dict_->collectStats();
-    std::cout << "\n主词典统计:" << std::endl
-              << "节点统计:" << std::endl
-              << "  总节点数: " << main_stats.total_nodes << std::endl
-              << "  词条数: " << main_stats.word_count << std::endl
-              << "\n存储类型分布:" << std::endl
-              << "  数组存储节点数: " << main_stats.array_storage_count << std::endl
-              << "  Map存储节点数: " << main_stats.map_storage_count << std::endl
-              << "  Hybrid存储节点数: " << main_stats.hybrid_storage_count << std::endl
-              << "\n存储大小统计:" << std::endl
-              << "  最大数组大小: " << main_stats.max_array_size << std::endl
-              << "  最大Map大小: " << main_stats.max_map_size << std::endl
-              << "  最大Bucket大小: " << main_stats.max_bucket_size << std::endl
-              << "  Map总条目数: " << main_stats.total_map_entries << std::endl
-              << "  Bucket总条目数: " << main_stats.total_bucket_entries << std::endl
-              << "  最大深度: " << main_stats.max_depth << std::endl;
-
-    auto quantifier_stats = quantifier_dict_->collectStats();
-    std::cout << "\n量词词典:" << std::endl
-              << "总节点数: " << quantifier_stats.total_nodes << std::endl
-              << "词条数: " << quantifier_stats.word_count << std::endl;
-
-    auto stopword_stats = stop_words_->collectStats();
-    std::cout << "\n停用词词典:" << std::endl
-              << "总节点数: " << stopword_stats.total_nodes << std::endl
-              << "词条数: " << stopword_stats.word_count << std::endl;
-}
 
 CL_NS_END2

@@ -2,7 +2,7 @@
 #define CLUCENE_CN_QUANTIFIERSEGMENTER_H
 
 #include <memory>
-#include <set>
+#include <vector>
 
 #include "AnalyzeContext.h"
 #include "CLucene/analysis/ik/util/IKContainer.h"
@@ -13,7 +13,6 @@ class CN_QuantifierSegmenter : public ISegmenter {
 public:
     static const std::string SEGMENTER_NAME;
     static const std::u32string CHINESE_NUMBERS;
-    static std::set<char32_t> chinese_number_chars_;
 
     CN_QuantifierSegmenter();
     ~CN_QuantifierSegmenter() override = default;

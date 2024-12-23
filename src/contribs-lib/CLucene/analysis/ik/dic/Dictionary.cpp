@@ -130,4 +130,28 @@ bool Dictionary::isStopWord(const CharacterUtil::TypedRuneArray& typed_runes, si
     return result.isMatch();
 }
 
+void Dictionary::printStats() const {
+    std::cout << "\n词典树统计信息:" << std::endl;
+
+    auto main_stats = main_dict_->collectStats();
+    std::cout << "\n主词典:" << std::endl
+              << "总节点数: " << main_stats.total_nodes << std::endl
+              << "数组存储节点数: " << main_stats.array_nodes << std::endl
+              << "Map存储节点数: " << main_stats.map_nodes << std::endl
+              << "最大Map大小: " << main_stats.max_map_size << std::endl
+              << "Map总条目数: " << main_stats.total_map_entries << std::endl
+              << "最大深度: " << main_stats.max_depth << std::endl
+              << "词条数: " << main_stats.word_count << std::endl;
+
+    auto quantifier_stats = quantifier_dict_->collectStats();
+    std::cout << "\n量词词典:" << std::endl
+              << "总节点数: " << quantifier_stats.total_nodes << std::endl
+              << "词条数: " << quantifier_stats.word_count << std::endl;
+
+    auto stopword_stats = stop_words_->collectStats();
+    std::cout << "\n停用词词典:" << std::endl
+              << "总节点数: " << stopword_stats.total_nodes << std::endl
+              << "词条数: " << stopword_stats.word_count << std::endl;
+}
+
 CL_NS_END2

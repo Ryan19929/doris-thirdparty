@@ -100,6 +100,8 @@ public:
                       Hit& hit);
     bool isStopWord(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset = 0,
                     size_t count = 0);
+
+    void printStats() const;
 };
 
 inline Dictionary* Dictionary::singleton_ = nullptr;

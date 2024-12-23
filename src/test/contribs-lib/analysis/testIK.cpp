@@ -1266,6 +1266,7 @@ void testIKMatchHuge(CuTest* tc) {
 void testIKSmartModeTokenizer(CuTest* tc) {
     LanguageBasedAnalyzer a;
     Configuration cfg;
+    a.setLanguage(_T("ik"));
     a.setIKConfiguration(cfg);
     a.initDict("./ik-dict");
     const char* field_value_data = "我来到北京清华大学";
@@ -1274,7 +1275,6 @@ void testIKSmartModeTokenizer(CuTest* tc) {
     TokenStream* ts;
     Token t;
 
-    a.setLanguage(_T("ik"));
     a.setStem(false);
     a.setMode(AnalyzerMode::IK_Smart); // 使用 Smart 模式
     ts = a.tokenStream(_T("contents"), stringReader.get());
@@ -1561,6 +1561,7 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
     analyzer->initDict("./ik-dict");
     analyzer->setStem(false);
     // 记录开始时间
+//    Dictionary::getSingleton()->printStats();
     uint64_t start = Misc::currentTimeMillis();
 
     // 执行分词
@@ -1595,7 +1596,7 @@ void testFileIK(CuTest* tc) {
 
 CuSuite* testik(void) {
     CuSuite* suite = CuSuiteNew(_T("CLucene IK Test"));
-//
+
 //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
 //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
 //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);

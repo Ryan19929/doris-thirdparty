@@ -4,14 +4,20 @@ CL_NS_USE2(analysis, ik)
 const std::string CN_QuantifierSegmenter::SEGMENTER_NAME = "QUAN_SEGMENTER";
 const std::u32string CN_QuantifierSegmenter::CHINESE_NUMBERS =
         U"一二两三四五六七八九十零壹贰叁肆伍陆柒捌玖拾百千万亿拾佰仟萬億兆卅廿";
-std::set<char32_t> CN_QuantifierSegmenter::chinese_number_chars_;
+static constexpr size_t UNICODE_MAX = 0x10000; // 对于常见中文字符够用了
+static std::vector<bool> chinese_number_chars_table_;
 
 CN_QuantifierSegmenter::CN_QuantifierSegmenter() {
     number_start_ = -1;
     number_end_ = -1;
     count_hits_.clear();
-    for (auto ch : CHINESE_NUMBERS) {
-        chinese_number_chars_.insert(ch);
+
+    // 只需要初始化一次
+    if (chinese_number_chars_table_.empty()) {
+        chinese_number_chars_table_.resize(UNICODE_MAX, false);
+        for (auto ch : CHINESE_NUMBERS) {
+            chinese_number_chars_table_[ch] = true;
+        }
     }
 }
 
@@ -34,14 +40,15 @@ void CN_QuantifierSegmenter::reset() {
 
 void CN_QuantifierSegmenter::processCNumber(std::shared_ptr<AnalyzeContext> context) {
     if (number_start_ == -1 && number_end_ == -1) {
+        char32_t currentChar = context->getCurrentChar();
         if (CharacterUtil::CHAR_CHINESE == context->getCurrentCharType() &&
-            chinese_number_chars_.count(context->getCurrentChar()) != 0) {
+            currentChar < UNICODE_MAX && chinese_number_chars_table_[currentChar]) {
             number_start_ = context->getCursor();
             number_end_ = context->getCursor();
         }
     } else {
         if (CharacterUtil::CHAR_CHINESE == context->getCurrentCharType() &&
-            chinese_number_chars_.count(context->getCurrentChar()) != 0) {
+            chinese_number_chars_table_[context->getCurrentChar()] != 0) {
             number_end_ = context->getCursor();
         } else {
             outputNumLexeme(context);

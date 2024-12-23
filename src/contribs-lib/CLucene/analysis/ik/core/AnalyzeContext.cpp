@@ -180,24 +180,24 @@ std::optional<Lexeme> AnalyzeContext::getNextLexeme() {
 }
 
 void AnalyzeContext::outputToResult() {
-    size_t index = 0;
-    for (; index <= cursor_;) {
+    size_t estimated_size = path_map_.size() * 2; // 估计大小
+    for (size_t index = 0; index <= cursor_;) {
         if (typed_runes_[index].char_type == CharacterUtil::CHAR_USELESS) {
             index++;
             last_useless_char_num_++;
             continue;
         }
         last_useless_char_num_ = 0;
-        auto pathIter = path_map_.find(typed_runes_[index].getBytePosition());
+        auto byte_pos = typed_runes_[index].getBytePosition();
+        auto pathIter = path_map_.find(byte_pos);
         if (pathIter != path_map_.end()) {
             auto& path = pathIter->second;
-            auto lexeme = path->pollFirst();
-            while (lexeme) {
+            while (auto lexeme = path->pollFirst()) {
                 results_.push_back(std::move(*lexeme));
                 index = lexeme->getCharEnd() + 1;
-                lexeme = path->pollFirst();
-                if (lexeme) {
-                    for (; index < lexeme->getCharBegin(); index++) {
+                auto next_lexeme = path->peekFirst();
+                if (next_lexeme) {
+                    for (; index < next_lexeme->getCharBegin(); index++) {
                         outputSingleCJK(index);
                     }
                 }

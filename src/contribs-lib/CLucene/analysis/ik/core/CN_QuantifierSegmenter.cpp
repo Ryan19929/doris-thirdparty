@@ -57,7 +57,7 @@ void CN_QuantifierSegmenter::processCNumber(AnalyzeContext& context) {
         }
     }
 
-    if (context.isBufferConsumed() && (number_start_ != -1 && number_end_ != -1)) {
+    if ((number_start_ != -1 && number_end_ != -1) && context.isBufferConsumed()) {
         outputNumLexeme(context);
         number_start_ = -1;
         number_end_ = -1;

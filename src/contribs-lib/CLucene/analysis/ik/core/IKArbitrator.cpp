@@ -15,7 +15,6 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
         }
     };
 
-
     while (org_lexeme) {
         if (!cross_path->addCrossLexeme(*org_lexeme)) {
             process_path(cross_path);
@@ -29,7 +28,8 @@ void IKArbitrator::process(std::shared_ptr<AnalyzeContext> context, bool use_sma
     process_path(cross_path);
 }
 
-std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell, size_t full_text_length) {
+std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell,
+                                                size_t full_text_length) {
     std::unique_ptr<LexemePath> best_path;
     auto option = std::make_shared<LexemePath>();
 
@@ -52,8 +52,8 @@ std::unique_ptr<LexemePath> IKArbitrator::judge(QuickSortSet::Cell* lexeme_cell,
     return best_path;
 }
 
-
-void IKArbitrator::forwardPath_void(QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath> path_option) {
+void IKArbitrator::forwardPath_void(QuickSortSet::Cell* lexeme_cell,
+                                    std::shared_ptr<LexemePath> path_option) {
     auto current_cell = lexeme_cell;
 
     while (current_cell) {
@@ -62,10 +62,10 @@ void IKArbitrator::forwardPath_void(QuickSortSet::Cell* lexeme_cell, std::shared
     }
 }
 
-IKStack<QuickSortSet::Cell*> IKArbitrator::forwardPath(
-        QuickSortSet::Cell* lexeme_cell, std::shared_ptr<LexemePath> path_option) {
+IKStack<QuickSortSet::Cell*> IKArbitrator::forwardPath(QuickSortSet::Cell* lexeme_cell,
+                                                       std::shared_ptr<LexemePath> path_option) {
     // Stack of conflicting Lexemes
-//    total_calls_++;
+    //    total_calls_++;
     IKStack<QuickSortSet::Cell*> conflictStack;
 
     auto current_cell = lexeme_cell;
@@ -74,7 +74,6 @@ IKStack<QuickSortSet::Cell*> IKArbitrator::forwardPath(
         if (!path_option->addNotCrossLexeme(current_cell->getLexeme())) {
             // Lexeme intersection, if addition fails, push to lexemeStack
             conflictStack.push(current_cell);
-
         }
         current_cell = current_cell->getNext();
     }
@@ -82,7 +81,7 @@ IKStack<QuickSortSet::Cell*> IKArbitrator::forwardPath(
 }
 
 void IKArbitrator::backPath(const Lexeme& lexeme, std::shared_ptr<LexemePath> option) {
-    while(option->checkCross(lexeme)) {
+    while (option->checkCross(lexeme)) {
         option->removeTail();
     }
 }

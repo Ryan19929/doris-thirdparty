@@ -2,8 +2,8 @@
 #define CLUCENE_IKSEGMENTER_H
 
 #include <iostream>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "AnalyzeContext.h"
 #include "CJKSegmenter.h"

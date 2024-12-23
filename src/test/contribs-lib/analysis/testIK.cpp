@@ -1589,13 +1589,13 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
 void testFileIK(CuTest* tc) {
     char loc[1024];
     strcpy(loc, clucene_data_location);
-    strcat(loc, "/reuters-21578/chinese-perf.txt");
+    strcat(loc, "/contribs-lib/analysis/chinese/speed-test-text.txt");
     testIKMatchHugeFromFile(tc, loc);
 }
 
 CuSuite* testik(void) {
     CuSuite* suite = CuSuiteNew(_T("CLucene IK Test"));
-
+//
 //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
 //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
 //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
@@ -1613,7 +1613,7 @@ CuSuite* testik(void) {
 //    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
 //    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
 //    SUITE_ADD_TEST(suite, testIKRareCharacters);
-
+//
 //    SUITE_ADD_TEST(suite, testIKMatch);
 //    SUITE_ADD_TEST(suite, testIKMatch2);
 //    SUITE_ADD_TEST(suite, testIKMatchHuge);

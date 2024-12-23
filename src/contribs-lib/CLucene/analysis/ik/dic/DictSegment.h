@@ -3,8 +3,8 @@
 
 #include <CLucene.h>
 
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "CLucene/analysis/ik/core/CharacterUtil.h"

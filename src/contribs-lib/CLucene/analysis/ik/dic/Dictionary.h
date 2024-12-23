@@ -4,8 +4,8 @@
 #include <CLucene.h>
 
 #include <memory>
-#include <string>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include "CLucene/LuceneThreads.h"
@@ -50,8 +50,8 @@ private:
     void loadStopWordDict();
     void loadQuantifierDict();
 
-    void loadDictFile(DictSegment* dict, const std::string& file_path,
-                      bool critical, const std::string& dict_name);
+    void loadDictFile(DictSegment* dict, const std::string& file_path, bool critical,
+                      const std::string& dict_name);
 
     Dictionary(const Dictionary&) = delete;
     Dictionary& operator=(const Dictionary&) = delete;
@@ -78,8 +78,7 @@ public:
         return singleton_;
     }
 
-    static Dictionary * getSingleton(const Configuration& cfg,
-                                                    bool useExtDict = false) {
+    static Dictionary* getSingleton(const Configuration& cfg, bool useExtDict = false) {
         std::call_once(init_flag_, [&]() {
             singleton_ = new Dictionary(cfg, useExtDict);
             singleton_->loadMainDict();

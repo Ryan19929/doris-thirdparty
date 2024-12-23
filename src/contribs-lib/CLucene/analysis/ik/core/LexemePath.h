@@ -1,10 +1,11 @@
 #ifndef CLUCENE_LEXEMEPATH_H
 #define CLUCENE_LEXEMEPATH_H
 
-#include "CLucene/_ApiHeader.h"
-#include "QuickSortSet.h"
 #include <memory>
 #include <optional>
+
+#include "CLucene/_ApiHeader.h"
+#include "QuickSortSet.h"
 
 CL_NS_DEF2(analysis, ik)
 

@@ -15,7 +15,8 @@ IKTokenizer::IKTokenizer(Reader* reader, std::shared_ptr<Configuration> config)
     Tokenizer::ownReader = false;
 }
 
-IKTokenizer::IKTokenizer(Reader* reader,  std::shared_ptr<Configuration> config, bool isSmart, bool lowercase, bool ownReader)
+IKTokenizer::IKTokenizer(Reader* reader, std::shared_ptr<Configuration> config, bool isSmart,
+                         bool lowercase, bool ownReader)
         : config_(config) {
     reset(reader);
     config_->setUseSmart(isSmart);
@@ -38,7 +39,7 @@ Token* IKTokenizer::next(Token* token) {
 void IKTokenizer::reset(Reader* reader) {
     this->input = reader;
     this->buffer_index_ = 0;
-    this->data_length_= 0;
+    this->data_length_ = 0;
     this->tokens_text_.clear();
 
     buffer_.reserve(input->size());

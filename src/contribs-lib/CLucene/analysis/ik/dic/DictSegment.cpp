@@ -15,7 +15,6 @@ bool DictSegment::hasNextNode() const {
     return store_size_ > 0;
 }
 
-
 Hit DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes, size_t unicode_offset,
                        size_t count) {
     Hit search_hit;
@@ -99,7 +98,7 @@ void DictSegment::fillSegment(const char* text) {
     current->node_state_ = 1;
 }
 
-DictSegment * DictSegment::lookforSegment(int32_t keyChar, bool create) {
+DictSegment* DictSegment::lookforSegment(int32_t keyChar, bool create) {
     DictSegment* child = nullptr;
 
     if (store_size_ <= ARRAY_LENGTH_LIMIT) {
@@ -130,8 +129,7 @@ DictSegment * DictSegment::lookforSegment(int32_t keyChar, bool create) {
                 store_size_++;
             } else {
                 for (size_t i = 0; i < store_size_; i++) {
-                    children_map_[children_array_[i]->key_char_] =
-                            std::move(children_array_[i]);
+                    children_map_[children_array_[i]->key_char_] = std::move(children_array_[i]);
                 }
                 child = new_segment.get();
                 children_map_[keyChar] = std::move(new_segment);

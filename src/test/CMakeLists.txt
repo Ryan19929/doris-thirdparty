@@ -99,6 +99,7 @@ SET(test_files ./tests.cpp
         ./index/TestHighFreqTerms.cpp
         ./index/TestReuters.cpp
         ./index/TestAddIndexesNoOptimize.cpp
+        ./index/TestTermVectorsReader.cpp
         ./util/TestPriorityQueue.cpp
         ./util/TestBitSet.cpp
         ./util/TestBKD.cpp

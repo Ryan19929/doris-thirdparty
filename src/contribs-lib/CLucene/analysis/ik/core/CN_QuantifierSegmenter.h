@@ -1,12 +1,12 @@
 #ifndef CLUCENE_CN_QUANTIFIERSEGMENTER_H
 #define CLUCENE_CN_QUANTIFIERSEGMENTER_H
 
-#include <set>
 #include <memory>
+#include <set>
 
 #include "AnalyzeContext.h"
+#include "CLucene/analysis/ik/util/IKContainer.h"
 #include "ISegmenter.h"
-#include "CLucene/analysis/ik/util/AllocatorManager.h"
 CL_NS_DEF2(analysis, ik)
 
 class CN_QuantifierSegmenter : public ISegmenter {

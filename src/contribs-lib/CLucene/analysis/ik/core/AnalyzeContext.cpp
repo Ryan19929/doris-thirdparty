@@ -171,7 +171,7 @@ std::optional<Lexeme> AnalyzeContext::getNextLexeme() {
             results_.pop_front();
         } else {
             result.setText(std::string(segment_buff_.data() + result.getByteBegin(),
-                                        result.getByteLength()));
+                                       result.getByteLength()));
             break;
         }
     }
@@ -212,11 +212,10 @@ void AnalyzeContext::outputToResult() {
 void AnalyzeContext::outputSingleCJK(size_t index) {
     if (typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE ||
         typed_runes_[index].char_type == CharacterUtil::CHAR_OTHER_CJK) {
-        results_.emplace_back(
-                buffer_offset_, typed_runes_[index].offset, typed_runes_[index].len,
-                typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE
-                        ? Lexeme::Type::CNChar
-                        : Lexeme::Type::OtherCJK,
-                index, index);
+        results_.emplace_back(buffer_offset_, typed_runes_[index].offset, typed_runes_[index].len,
+                              typed_runes_[index].char_type == CharacterUtil::CHAR_CHINESE
+                                      ? Lexeme::Type::CNChar
+                                      : Lexeme::Type::OtherCJK,
+                              index, index);
     }
 }

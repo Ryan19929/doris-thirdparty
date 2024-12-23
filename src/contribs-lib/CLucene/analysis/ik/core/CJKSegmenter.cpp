@@ -13,13 +13,13 @@ void CJKSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
             auto it = tmp_hits_.begin();
             while (it != tmp_hits_.end()) {
                 Hit& hit = *it;
-                Dictionary::getSingleton()->matchWithHit(context->getTypedRuneArray(), context->getCursor(),hit);
+                Dictionary::getSingleton()->matchWithHit(context->getTypedRuneArray(),
+                                                         context->getCursor(), hit);
 
                 if (hit.isMatch()) {
                     Lexeme newLexeme(context->getBufferOffset(), hit.getByteBegin(),
-                                                 hit.getByteEnd() - hit.getByteBegin(),
-                                                 Lexeme::Type::CNWord, hit.getCharBegin(),
-                                                 hit.getCharEnd());
+                                     hit.getByteEnd() - hit.getByteBegin(), Lexeme::Type::CNWord,
+                                     hit.getCharBegin(), hit.getCharEnd());
                     context->addLexeme(std::move(newLexeme));
 
                     if (!hit.isPrefix()) {
@@ -40,8 +40,8 @@ void CJKSegmenter::analyze(std::shared_ptr<AnalyzeContext> context) {
 
         if (singleCharHit.isMatch()) {
             Lexeme newLexeme(context->getBufferOffset(), context->getCurrentCharOffset(),
-                               context->getCurrentCharLen(), Lexeme::Type::CNChar,
-                               singleCharHit.getCharBegin(), singleCharHit.getCharEnd());
+                             context->getCurrentCharLen(), Lexeme::Type::CNChar,
+                             singleCharHit.getCharBegin(), singleCharHit.getCharEnd());
             context->addLexeme(std::move(newLexeme));
         }
         if (singleCharHit.isPrefix()) {

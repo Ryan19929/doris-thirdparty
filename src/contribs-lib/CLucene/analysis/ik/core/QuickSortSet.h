@@ -1,11 +1,12 @@
 #ifndef CLUCENE_QUICKSORTSET_H
 #define CLUCENE_QUICKSORTSET_H
 
-#include "CLucene/_ApiHeader.h"
-#include "ObjectPool.h"
-#include "Lexeme.h"
 #include <memory>
 #include <optional>
+
+#include "CLucene/_ApiHeader.h"
+#include "CLucene/analysis/ik/util/IKObjectPool.h"
+#include "Lexeme.h"
 
 CL_NS_DEF2(analysis, ik)
 

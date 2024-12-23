@@ -69,10 +69,9 @@ void CN_QuantifierSegmenter::processCount(std::shared_ptr<AnalyzeContext> contex
             while (it != count_hits_.end()) {
                 Dictionary::getSingleton()->matchWithHit(typedRuneArray, it->getCharEnd(), *it);
                 if (it->isMatch()) {
-                    Lexeme newLexeme(
-                            context->getBufferOffset(), it->getByteBegin(),
-                            it->getByteEnd() - it->getByteBegin(), Lexeme::Type::Count,
-                            it->getCharBegin(), it->getCharEnd());
+                    Lexeme newLexeme(context->getBufferOffset(), it->getByteBegin(),
+                                     it->getByteEnd() - it->getByteBegin(), Lexeme::Type::Count,
+                                     it->getCharBegin(), it->getCharEnd());
                     context->addLexeme(std::move(newLexeme));
                     if (!it->isPrefix()) {
                         it = count_hits_.erase(it);
@@ -90,10 +89,9 @@ void CN_QuantifierSegmenter::processCount(std::shared_ptr<AnalyzeContext> contex
         auto singleCharHit = Dictionary::getSingleton()->matchInQuantifierDict(
                 typedRuneArray, context->getCursor(), 1);
         if (singleCharHit.isMatch()) {
-            Lexeme newLexeme(
-                    context->getBufferOffset(), context->getCurrentCharOffset(),
-                    context->getCurrentCharLen(), Lexeme::Type::Count, context->getCursor(),
-                    context->getCursor());
+            Lexeme newLexeme(context->getBufferOffset(), context->getCurrentCharOffset(),
+                             context->getCurrentCharLen(), Lexeme::Type::Count,
+                             context->getCursor(), context->getCursor());
             context->addLexeme(std::move(newLexeme));
 
             if (singleCharHit.isPrefix()) {
@@ -130,10 +128,9 @@ void CN_QuantifierSegmenter::outputNumLexeme(std::shared_ptr<AnalyzeContext> con
     if (number_start_ > -1 && number_end_ > -1) {
         const auto& typedRuneArray = context->getTypedRuneArray();
 
-        Lexeme newLexeme(context->getBufferOffset(),
-                                                  typedRuneArray[number_start_].offset,
-                                                  (number_end_ - number_start_ + 1) * 3,
-                                                  Lexeme::Type::CNum, number_start_, number_end_);
+        Lexeme newLexeme(context->getBufferOffset(), typedRuneArray[number_start_].offset,
+                         (number_end_ - number_start_ + 1) * 3, Lexeme::Type::CNum, number_start_,
+                         number_end_);
         context->addLexeme(std::move(newLexeme));
     }
 }

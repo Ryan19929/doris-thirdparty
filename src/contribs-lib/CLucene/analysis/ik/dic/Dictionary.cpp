@@ -13,8 +13,8 @@ Dictionary::Dictionary(const Configuration& cfg, bool use_ext_dict)
           stop_words_(std::make_unique<DictSegment>(0)),
           load_ext_dict_(use_ext_dict) {}
 
-void Dictionary::loadDictFile(DictSegment * dict, const std::string& file_path,
-                              bool critical, const std::string& dict_name) {
+void Dictionary::loadDictFile(DictSegment* dict, const std::string& file_path, bool critical,
+                              const std::string& dict_name) {
     std::ifstream in(file_path);
     if (!in.good()) {
         if (critical) {
@@ -39,14 +39,15 @@ void Dictionary::loadMainDict() {
     // Load extension dictionaries
     if (load_ext_dict_) {
         for (const auto& extDict : config_->getExtDictFiles()) {
-            loadDictFile(main_dict_.get(), config_->getDictPath() + "/" + extDict, false, "Extra Dict");
+            loadDictFile(main_dict_.get(), config_->getDictPath() + "/" + extDict, false,
+                         "Extra Dict");
         }
     }
 }
 
 void Dictionary::loadStopWordDict() {
-    loadDictFile(stop_words_.get(), config_->getDictPath() + "/" + config_->getStopWordDictFile(), false,
-                 "Stopword");
+    loadDictFile(stop_words_.get(), config_->getDictPath() + "/" + config_->getStopWordDictFile(),
+                 false, "Stopword");
     // Load extension stop words dictionary
     if (load_ext_dict_) {
         for (const auto& extDict : config_->getExtStopWordDictFiles()) {
@@ -57,8 +58,9 @@ void Dictionary::loadStopWordDict() {
 }
 
 void Dictionary::loadQuantifierDict() {
-    loadDictFile(quantifier_dict_.get(), config_->getDictPath() + "/" + config_->getQuantifierDictFile(),
-                 true, "Quantifier");
+    loadDictFile(quantifier_dict_.get(),
+                 config_->getDictPath() + "/" + config_->getQuantifierDictFile(), true,
+                 "Quantifier");
 }
 
 void Dictionary::reload() {
@@ -107,7 +109,6 @@ Hit Dictionary::matchInQuantifierDict(const CharacterUtil::TypedRuneArray& typed
 
 void Dictionary::matchWithHit(const CharacterUtil::TypedRuneArray& typed_runes, int current_index,
                               Hit& hit) {
-    // 获取已匹配的DictSegment
     if (auto matchedSegment = hit.getMatchedDictSegment()) {
         matchedSegment->match(typed_runes, current_index, 1, hit);
         return;

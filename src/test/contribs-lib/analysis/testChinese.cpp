@@ -1506,7 +1506,7 @@ void testJiebaMatchHugeFromFile(CuTest* tc, const char* fname) {
 void testFileJieba(CuTest* tc) {
     char loc[1024];
     strcpy(loc, clucene_data_location);
-    strcat(loc, "/reuters-21578/chinese-perf.txt");
+    strcat(loc, "/contribs-lib/analysis/chinese/speed-test-text.txt");
     testJiebaMatchHugeFromFile(tc, loc);
 }
 

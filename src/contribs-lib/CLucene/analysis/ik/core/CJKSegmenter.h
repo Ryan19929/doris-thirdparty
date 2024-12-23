@@ -1,14 +1,13 @@
 #ifndef CLUCENE_CJKSEGMENTER_H
 #define CLUCENE_CJKSEGMENTER_H
 
-
 #include <list>
 #include <memory>
 #include <string>
 
 #include "AnalyzeContext.h"
 #include "CLucene/analysis/ik/dic/Dictionary.h"
-#include "CLucene/analysis/ik/util/AllocatorManager.h"
+#include "CLucene/analysis/ik/util/IKContainer.h"
 #include "CharacterUtil.h"
 #include "ISegmenter.h"
 

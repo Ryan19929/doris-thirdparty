@@ -1,9 +1,9 @@
 #ifndef CLUCENE_CHARACTERUTIL_H
 #define CLUCENE_CHARACTERUTIL_H
 
-#include <vector>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <vector>
 
 #include "CLucene/_ApiHeader.h"
 #include "CLucene/analysis/jieba/Unicode.hpp"

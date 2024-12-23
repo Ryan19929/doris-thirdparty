@@ -21,8 +21,8 @@ private:
 
 public:
     explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config);
-    explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config, bool is_smart, bool use_lowercase,
-                         bool own_reader = false);
+    explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config,
+                         bool is_smart, bool use_lowercase, bool own_reader = false);
     ~IKTokenizer() override = default;
 
     lucene::analysis::Token* next(lucene::analysis::Token* token) override;

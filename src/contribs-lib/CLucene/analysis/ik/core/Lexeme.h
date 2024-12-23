@@ -1,13 +1,13 @@
 #ifndef CLUCENE_LEXEME_H
 #define CLUCENE_LEXEME_H
 
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <memory>
 
 #include "CLucene/_ApiHeader.h"
+#include "CLucene/analysis/ik/util/IKObjectPool.h"
 #include "CharacterUtil.h"
-#include "ObjectPool.h"
 
 CL_NS_DEF2(analysis, ik)
 
@@ -35,8 +35,13 @@ public:
         // Chinese numeric-measure compound
         CQuan = 48
     };
-    Lexeme() : offset_(0), byte_begin_(0), byte_length_(0),
-              char_begin_(0), char_end_(0), type_(Type::Unknown) {}
+    Lexeme()
+            : offset_(0),
+              byte_begin_(0),
+              byte_length_(0),
+              char_begin_(0),
+              char_end_(0),
+              type_(Type::Unknown) {}
     explicit Lexeme(size_t offset, size_t begin, size_t length, Type type, size_t charBegin,
                     size_t charEnd);
     void reset() {

@@ -3,11 +3,12 @@
 #include <cstddef>
 #include <new>
 #include <vector>
+
 #include "CLucene/_ApiHeader.h"
 
 CL_NS_DEF2(analysis, ik)
 
-template<typename T, size_t BlockSize = 16>
+template <typename T, size_t BlockSize = 16>
 class IKAllocator {
 public:
     typedef T value_type;
@@ -18,58 +19,53 @@ public:
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
-    template<typename U>
-    struct rebind { typedef IKAllocator<U, BlockSize> other; };
-
+    template <typename U>
+    struct rebind {
+        typedef IKAllocator<U, BlockSize> other;
+    };
 
 private:
-
-    // 对齐的节点结构
+    // Node structure with alignment
     struct alignas(std::max_align_t) Node {
         alignas(T) char data[sizeof(T)];
         Node* next;
     };
-    // 固定大小的块数组
-    static constexpr size_t MAX_BLOCKS = 64;
-    Node* blocks_[MAX_BLOCKS];
-    size_t block_count_ = 0;
-
-    // 预分配的内存池
+    // Pre-allocated memory pool
     static constexpr size_t POOL_SIZE = BlockSize * 4;
     alignas(Node) char initial_pool_[sizeof(Node) * POOL_SIZE];
-    bool pool_initialized_ = false;
+    bool initialized_ = false;
 
-    // 空闲列表
-    Node* free_list_;
+    Node* free_list_head_;
+
+    std::vector<Node*> blocks_;
 
 public:
-    IKAllocator() : free_list_(nullptr) {
+    IKAllocator() : free_list_head_(nullptr) {
+        blocks_.reserve(64);
         initializePool();
     }
 
-    IKAllocator(const IKAllocator&) : free_list_(nullptr) {
-        initializePool();
-    }
+    IKAllocator(const IKAllocator&) : free_list_head_(nullptr) { initializePool(); }
 
-    template<typename U>
-    IKAllocator(const IKAllocator<U, BlockSize>&) : free_list_(nullptr) {
+    template <typename U>
+    IKAllocator(const IKAllocator<U, BlockSize>&) : free_list_head_(nullptr) {
         initializePool();
     }
 
     ~IKAllocator() {
-        // 只释放动态分配的块
-        for (size_t i = 0; i < block_count_; ++i) {
-            if (blocks_[i] >= reinterpret_cast<Node*>(initial_pool_) &&
-                blocks_[i] < reinterpret_cast<Node*>(initial_pool_ + sizeof(initial_pool_))) {
-                continue;  // 跳过初始池的内存
+        // 清理所有分配的块
+        for (Node* block : blocks_) {
+            if (block >= reinterpret_cast<Node*>(initial_pool_) &&
+                block < reinterpret_cast<Node*>(initial_pool_ + sizeof(initial_pool_))) {
+                continue; // 跳过初始池的内存
             }
-            ::operator delete(blocks_[i]);
+            ::operator delete(block);
         }
     }
 
 private:
     void initializePool() {
-        if (pool_initialized_) return;
+        if (initialized_) return;
 
         Node* nodes = reinterpret_cast<Node*>(initial_pool_);
         // 初始化预分配池中的节点
@@ -77,23 +73,16 @@ private:
             nodes[i].next = &nodes[i + 1];
         }
         nodes[POOL_SIZE - 1].next = nullptr;
-        free_list_ = nodes;
+        free_list_head_ = nodes;
 
-        blocks_[0] = nodes;
-        block_count_ = 1;
-        pool_initialized_ = true;
+        blocks_.push_back(nodes);
+        initialized_ = true;
     }
 
-    // 分配新的内存块
     Node* allocateBlock() {
-        if (block_count_ >= MAX_BLOCKS) {
-            throw std::bad_alloc();
-        }
-
         Node* block = static_cast<Node*>(::operator new(sizeof(Node) * BlockSize));
-        blocks_[block_count_++] = block;
+        blocks_.push_back(block);
 
-        // 初始化新块中的节点
         for (size_t i = 0; i < BlockSize - 1; ++i) {
             block[i].next = &block[i + 1];
         }
@@ -108,44 +97,49 @@ public:
             return static_cast<pointer>(::operator new(n * sizeof(T)));
         }
 
-        if (!free_list_) {
-            free_list_ = allocateBlock();
+        if (!free_list_head_) {
+            try {
+                free_list_head_ = allocateBlock();
+            } catch (const std::bad_alloc& e) {
+                return static_cast<pointer>(::operator new(sizeof(T)));
+            }
         }
 
-        Node* result = free_list_;
-        free_list_ = free_list_->next;
+        Node* result = free_list_head_;
+        free_list_head_ = free_list_head_->next;
         return reinterpret_cast<pointer>(&result->data);
     }
 
     void deallocate(pointer p, size_type n) {
+        if (!p) return;
         if (n != 1) {
             ::operator delete(p);
             return;
         }
 
-        // 快速路径 - 直接头插法
-        Node* node = reinterpret_cast<Node*>(
-                reinterpret_cast<char*>(p) - offsetof(Node, data)
-        );
-        node->next = free_list_;
-        free_list_ = node;
+        Node* node = reinterpret_cast<Node*>(reinterpret_cast<char*>(p) - offsetof(Node, data));
+        node->next = free_list_head_;
+        free_list_head_ = node;
     }
 
-    template<typename U, typename... Args>
+    template <typename U, typename... Args>
     void construct(U* p, Args&&... args) {
-        new(p) U(std::forward<Args>(args)...);
+        new (p) U(std::forward<Args>(args)...);
     }
 
-    template<typename U>
+    template <typename U>
     void destroy(U* p) {
         p->~U();
     }
 
     bool operator==(const IKAllocator&) const { return true; }
     bool operator!=(const IKAllocator&) const { return false; }
+
+    size_t max_size() const noexcept { return std::numeric_limits<size_type>::max() / sizeof(T); }
+
+    size_t get_allocated_block_count() const { return blocks_.size(); }
 };
 
 CL_NS_END2
-
 
 #endif //CLUCENE_IKALLOCATOR_H

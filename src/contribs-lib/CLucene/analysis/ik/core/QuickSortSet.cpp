@@ -4,8 +4,6 @@
 
 CL_NS_DEF2(analysis, ik)
 
-
-
 QuickSortSet::~QuickSortSet() {
     clear();
 }
@@ -13,7 +11,7 @@ QuickSortSet::~QuickSortSet() {
 void QuickSortSet::clear() {
     while (head_) {
         Cell* next = head_->next_;
-        ObjectPool<Cell>::getInstance().release(head_);
+        IKObjectPool<Cell>::getInstance().release(head_);
         head_ = next;
     }
     tail_ = nullptr;
@@ -21,7 +19,7 @@ void QuickSortSet::clear() {
 }
 
 bool QuickSortSet::addLexeme(Lexeme lexeme) {
-    auto* new_cell = ObjectPool<Cell>::getInstance().acquire();
+    auto* new_cell = IKObjectPool<Cell>::getInstance().acquire();
     new_cell->lexeme_ = std::move(lexeme);
 
     if (cell_size_ == 0) {
@@ -31,7 +29,7 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
     }
 
     if (*tail_ == *new_cell) {
-        ObjectPool<Cell>::getInstance().release(new_cell);
+        IKObjectPool<Cell>::getInstance().release(new_cell);
         return false;
     }
 
@@ -61,7 +59,7 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
 
     if (index && *index == *new_cell) {
         //delete new_cell;
-        ObjectPool<Cell>::getInstance().release(new_cell);
+        IKObjectPool<Cell>::getInstance().release(new_cell);
         return false;
     }
 
@@ -75,12 +73,12 @@ bool QuickSortSet::addLexeme(Lexeme lexeme) {
         cell_size_++;
         return true;
     }
-    ObjectPool<Cell>::getInstance().release(new_cell);
+    IKObjectPool<Cell>::getInstance().release(new_cell);
 
     return false;
 }
 
-const Lexeme* QuickSortSet::peekFirst() const{
+const Lexeme* QuickSortSet::peekFirst() const {
     return head_ ? &head_->lexeme_ : nullptr;
 }
 
@@ -95,7 +93,7 @@ std::optional<Lexeme> QuickSortSet::pollFirst() {
     else
         tail_ = nullptr;
 
-    ObjectPool<Cell>::getInstance().release(old_head);
+    IKObjectPool<Cell>::getInstance().release(old_head);
     --cell_size_;
     return result;
 }
@@ -115,11 +113,10 @@ std::optional<Lexeme> QuickSortSet::pollLast() {
     else
         head_ = nullptr;
 
-    ObjectPool<Cell>::getInstance().release(old_tail);
+    IKObjectPool<Cell>::getInstance().release(old_tail);
     --cell_size_;
     return result;
 }
-
 
 size_t QuickSortSet::getPathBegin() const {
     return head_ ? head_->lexeme_.getByteBegin() : 0;
@@ -128,6 +125,5 @@ size_t QuickSortSet::getPathBegin() const {
 size_t QuickSortSet::getPathEnd() const {
     return tail_ ? tail_->lexeme_.getByteBegin() + tail_->lexeme_.getByteLength() : 0;
 }
-
 
 CL_NS_END2

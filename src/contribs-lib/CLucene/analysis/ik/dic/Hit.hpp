@@ -35,9 +35,7 @@ public:
     void setUnmatch() { hitState_ = UNMATCH; }
 
     DictSegment* getMatchedDictSegment() const { return matchedDictSegment_; }
-    void setMatchedDictSegment(DictSegment* segment) {
-        matchedDictSegment_ = segment;
-    }
+    void setMatchedDictSegment(DictSegment* segment) { matchedDictSegment_ = segment; }
 
     size_t getByteBegin() const { return byteBegin_; }
     void setByteBegin(size_t pos) { byteBegin_ = pos; }

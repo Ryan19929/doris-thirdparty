@@ -81,14 +81,38 @@ private:
 
 public:
     struct NodeStats {
-        size_t total_nodes {0};
-        size_t array_nodes {0};
-        size_t map_nodes {0};
-        size_t hybrid_nodes {0};
-        size_t max_map_size {0};
-        size_t total_map_entries {0};
-        size_t max_depth {0};
-        size_t word_count {0};
+        size_t total_nodes {0};          // 总节点数
+        size_t array_nodes {0};          // 数组节点数
+        size_t map_nodes {0};            // map节点数
+        size_t hybrid_nodes {0};         // hybrid节点数
+        size_t max_array_size {0};       // 最大数组大小
+        size_t max_map_size {0};         // 最大map大小
+        size_t max_bucket_size {0};      // 最大bucket大小
+        size_t total_map_entries {0};    // map总条目数
+        size_t total_bucket_entries {0}; // bucket总条目数
+        size_t max_depth {0};            // 最大深度
+        size_t word_count {0};           // 词条数
+
+        // 存储类型分布
+        size_t array_storage_count {0};  // 使用数组存储的节点数
+        size_t map_storage_count {0};    // 使用map存储的节点数
+        size_t hybrid_storage_count {0}; // 使用hybrid存储的节点数
+
+        void accumulate(const NodeStats& other) {
+            total_nodes += other.total_nodes;
+            array_nodes += other.array_nodes;
+            map_nodes += other.map_nodes;
+            hybrid_nodes += other.hybrid_nodes;
+            max_array_size = std::max(max_array_size, other.max_array_size);
+            max_map_size = std::max(max_map_size, other.max_map_size);
+            max_bucket_size = std::max(max_bucket_size, other.max_bucket_size);
+            total_map_entries += other.total_map_entries;
+            total_bucket_entries += other.total_bucket_entries;
+            word_count += other.word_count;
+            array_storage_count += other.array_storage_count;
+            map_storage_count += other.map_storage_count;
+            hybrid_storage_count += other.hybrid_storage_count;
+        }
     };
 
     explicit DictSegment(int32_t key_char);

@@ -274,21 +274,21 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->outputToResult();
 
     auto lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "三个");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CQuan);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "苹");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "果");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
-    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
+    CuAssertTrue(tc, context->getNextLexeme() == std::nullopt);
 
     const char* testStr3 = "我有二十三个苹果";
     context->reset();
@@ -303,31 +303,31 @@ void testCNQuantifierSegmenter(CuTest* tc) {
     context->outputToResult();
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "我");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "有");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "二十三个");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CQuan);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "苹");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
     lexeme = context->getNextLexeme();
-    CuAssertTrue(tc, lexeme !=  std::nullopt);
+    CuAssertTrue(tc, lexeme != std::nullopt);
     CuAssertTrue(tc, lexeme->getText() == "果");
     CuAssertTrue(tc, lexeme->getType() == Lexeme::Type::CNChar);
 
-    CuAssertTrue(tc, context->getNextLexeme() ==  std::nullopt);
+    CuAssertTrue(tc, context->getNextLexeme() == std::nullopt);
 }
 
 void testSimpleIKTokenizer(CuTest* tc) {
@@ -1525,8 +1525,7 @@ void testIKRareCharacters(CuTest* tc) {
     _CLDELETE(ts);
 }
 
-
-void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
+void testIKMatchHugeFromFile(CuTest* tc, const char* fname, bool printResult) {
     if (!Misc::dir_Exists(fname)) {
         CuMessageA(tc, "File does not exist: %s\n", fname);
         return;
@@ -1568,7 +1567,7 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
     Token t;
     int32_t count = 0;
 
-    while(ts->next(&t)) {
+    while (ts->next(&t)) {
         count++;
     }
 
@@ -1576,12 +1575,13 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname) {
     uint64_t end = Misc::currentTimeMillis();
     int64_t time = end - start;
 
-    // 输出统计信息
-    CuMessageA(tc, "分词耗时: %d 毫秒\n", time);
-    CuMessageA(tc, "分词数量: %d\n", count);
-    CuMessageA(tc, "平均每个分词耗时: %.2f 微秒\n", (time * 1000.0) / count);
-    CuMessageA(tc, "处理速度: %.2f MB/s\n",
-               (bytes / 1024.0 / 1024.0) / (time / 1000.0));
+    // 只在需要时输出统计信息
+    if (printResult) {
+        CuMessageA(tc, "分词耗时: %d 毫秒\n", time);
+        CuMessageA(tc, "分词数量: %d\n", count);
+        CuMessageA(tc, "平均每个分词耗时: %.2f 微秒\n", (time * 1000.0) / count);
+        CuMessageA(tc, "处理速度: %.2f MB/s\n", (bytes / 1024.0 / 1024.0) / (time / 1000.0));
+    }
 
     _CLDELETE(ts);
 }
@@ -1590,33 +1590,42 @@ void testFileIK(CuTest* tc) {
     char loc[1024];
     strcpy(loc, clucene_data_location);
     strcat(loc, "/contribs-lib/analysis/chinese/speed-test-text.txt");
-    testIKMatchHugeFromFile(tc, loc);
+
+    // 预热
+    for (int i = 0; i < 3; i++) {
+        testIKMatchHugeFromFile(tc, loc, false);
+    }
+
+    // 实际测试
+    for (int i = 0; i < 5; i++) {
+        testIKMatchHugeFromFile(tc, loc, true);
+    }
 }
 
 CuSuite* testik(void) {
     CuSuite* suite = CuSuiteNew(_T("CLucene IK Test"));
+    //
+    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
+    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
+    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
+    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
+    //
+    //    SUITE_ADD_TEST(suite, testCharacterUtil);
+    //    SUITE_ADD_TEST(suite, testCJKSegmenter);
+    //    SUITE_ADD_TEST(suite, testLetterSegmenter);
+    //    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
+    //    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
+    //    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
+    //
+    //    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
+    //    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
+    //    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
+    //    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
+    //    SUITE_ADD_TEST(suite, testIKRareCharacters);
 
-    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
-    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
-    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
-    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
-
-    SUITE_ADD_TEST(suite, testCharacterUtil);
-    SUITE_ADD_TEST(suite, testCJKSegmenter);
-    SUITE_ADD_TEST(suite, testLetterSegmenter);
-    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
-    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
-    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
-
-    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
-    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
-    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
-    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
-    SUITE_ADD_TEST(suite, testIKRareCharacters);
-
-//    SUITE_ADD_TEST(suite, testIKMatch);
-//    SUITE_ADD_TEST(suite, testIKMatch2);
-//    SUITE_ADD_TEST(suite, testIKMatchHuge);
+    //    SUITE_ADD_TEST(suite, testIKMatch);
+    //    SUITE_ADD_TEST(suite, testIKMatch2);
+    //    SUITE_ADD_TEST(suite, testIKMatchHuge);
     SUITE_ADD_TEST(suite, testFileIK);
 
     return suite;

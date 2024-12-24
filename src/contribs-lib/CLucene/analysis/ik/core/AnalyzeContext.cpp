@@ -190,7 +190,9 @@ void AnalyzeContext::outputToResult() {
         auto byte_pos = typed_runes_[index].getBytePosition();
         auto pathIter = path_map_.find(byte_pos);
         if (pathIter != path_map_.end()) {
-            auto& path = pathIter->second;
+//            auto& path = pathIter->second;
+            auto& path = pathIter->value;  // 注意这里改成了 value
+
             while (auto lexeme = path->pollFirst()) {
                 results_.push_back(std::move(*lexeme));
                 index = lexeme->getCharEnd() + 1;
@@ -206,7 +208,7 @@ void AnalyzeContext::outputToResult() {
             index++;
         }
     }
-    IKUnorderedMap<size_t, std::unique_ptr<LexemePath>>().swap(path_map_);
+    IKFlatMap<size_t, std::unique_ptr<LexemePath>>().swap(path_map_);
 }
 
 void AnalyzeContext::outputSingleCJK(size_t index) {

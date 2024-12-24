@@ -50,7 +50,7 @@ void DictSegment::match(const CharacterUtil::TypedRuneArray& typed_runes, size_t
     } else {
         auto it = children_map_.find(ch);
         if (it != children_map_.end()) {
-            ds = it->second.get();
+            ds = it->value.get();
         }
     }
 
@@ -141,7 +141,7 @@ DictSegment* DictSegment::lookforSegment(int32_t keyChar, bool create) {
     } else {
         auto it = children_map_.find(keyChar);
         if (it != children_map_.end()) {
-            child = it->second.get();
+            child = it->value.get();
         } else if (create) {
             auto new_segment = std::make_unique<DictSegment>(keyChar);
             child = new_segment.get();

@@ -170,6 +170,99 @@ using IKSet = std::set<T, Compare, IKAllocator<T>>;
 template <typename T>
 using IKList = std::list<T, IKAllocator<T>>;
 
+template <typename Key, typename Value>
+class IKFlatMap {
+private:
+    struct Entry {
+        Key key;
+        Value value;
+
+        Entry(const Key& k, Value&& v) : key(k), value(std::move(v)) {}
+
+        bool operator<(const Entry& other) const { return key < other.key; }
+
+        bool operator<(const Key& k) const { return key < k; }
+    };
+
+    IKVector<Entry> entries_; // 使用已有的 IKVector
+
+public:
+    using iterator = typename IKVector<Entry>::iterator;
+    using const_iterator = typename IKVector<Entry>::const_iterator;
+
+    IKFlatMap() {
+        entries_.reserve(400); // 针对分词场景预分配
+    }
+
+    // 插入元素
+    void emplace(const Key& key, Value&& value) {
+        auto it = lower_bound(key);
+        if (it != entries_.end() && !(key < it->key)) {
+            it->value = std::move(value);
+        } else {
+            entries_.emplace(it, key, std::move(value));
+        }
+    }
+
+    // 查找元素
+    iterator find(const Key& key) {
+        auto it = lower_bound(key);
+        if (it != entries_.end() && !(key < it->key)) {
+            return it;
+        }
+        return entries_.end();
+    }
+
+    const_iterator find(const Key& key) const {
+        auto it = lower_bound(key);
+        if (it != entries_.end() && !(key < it->key)) {
+            return it;
+        }
+        return entries_.end();
+    }
+
+    // 边界查找
+    iterator lower_bound(const Key& key) {
+        return std::lower_bound(entries_.begin(), entries_.end(), key,
+                                [](const Entry& entry, const Key& k) { return entry.key < k; });
+    }
+
+    const_iterator lower_bound(const Key& key) const {
+        return std::lower_bound(entries_.begin(), entries_.end(), key,
+                                [](const Entry& entry, const Key& k) { return entry.key < k; });
+    }
+
+    // 迭代器
+    iterator begin() { return entries_.begin(); }
+    iterator end() { return entries_.end(); }
+    const_iterator begin() const { return entries_.begin(); }
+    const_iterator end() const { return entries_.end(); }
+
+    // 容量操作
+    size_t size() const { return entries_.size(); }
+    bool empty() const { return entries_.empty(); }
+    void clear() { entries_.clear(); }
+    void reserve(size_t n) { entries_.reserve(n); }
+
+    // 高效的swap
+    void swap(IKFlatMap& other) noexcept { entries_.swap(other.entries_); }
+
+    // 检查key是否存在
+    bool contains(const Key& key) const { return find(key) != end(); }
+
+    // 访问元素
+    Value& operator[](const Key& key) {
+        auto it = lower_bound(key);
+        if (it != entries_.end() && !(key < it->key)) {
+            return it->value;
+        }
+        return entries_.emplace(it, key, Value())->value;
+    }
+
+    // 获取内部vector的引用（用于调试）
+    const IKVector<Entry>& data() const { return entries_; }
+};
+
 CL_NS_END2
 
 #endif //CLUCENE_IKCONTAINER_H

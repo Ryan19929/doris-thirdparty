@@ -9,20 +9,21 @@
 #include <vector>
 
 #include "CLucene/analysis/ik/core/CharacterUtil.h"
+#include "CLucene/analysis/ik/util/IKContainer.h"
 #include "Hit.hpp"
 
 CL_NS_DEF2(analysis, ik)
 
 class CLUCENE_EXPORT DictSegment : public std::enable_shared_from_this<DictSegment> {
 private:
-    static constexpr size_t ARRAY_LENGTH_LIMIT = 3;      // 增加数组上限
+    static constexpr size_t ARRAY_LENGTH_LIMIT = 3; // 增加数组上限
     int32_t key_char_;
     std::vector<std::unique_ptr<DictSegment>> children_array_;
-    std::unordered_map<int32_t, std::unique_ptr<DictSegment>> children_map_;
+    IKFlatMap<int32_t, std::unique_ptr<DictSegment>> children_map_;
 
     DictSegment* lookforSegment(int32_t key_char, bool create_if_missing);
     int node_state_ {0};
-    size_t store_size_ {0};                         // 子节点数量
+    size_t store_size_ {0}; // 子节点数量
 
 public:
     explicit DictSegment(int32_t key_char);

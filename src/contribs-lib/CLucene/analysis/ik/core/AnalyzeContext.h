@@ -47,7 +47,7 @@ private:
     // Original tokenization result set
     QuickSortSet org_lexemes_;
     // LexemePath position index table
-    IKUnorderedMap<size_t, std::unique_ptr<LexemePath>> path_map_;
+    IKFlatMap<size_t, std::unique_ptr<LexemePath>> path_map_;
     // Final tokenization result set
     IKList<Lexeme> results_;
     // Tokenizer configuration

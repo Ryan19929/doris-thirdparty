@@ -7,6 +7,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <boost/container/flat_map.hpp>
 
 #include "CLucene/_ApiHeader.h"
 #include "CLucene/analysis/ik/cfg/Configuration.h"
@@ -47,7 +48,8 @@ private:
     // Original tokenization result set
     QuickSortSet org_lexemes_;
     // LexemePath position index table
-    IKUnorderedMap<size_t, std::unique_ptr<LexemePath>> path_map_;
+
+    boost::container::flat_map<size_t, std::unique_ptr<LexemePath>> path_map_;
     // Final tokenization result set
     IKList<Lexeme> results_;
     // Tokenizer configuration

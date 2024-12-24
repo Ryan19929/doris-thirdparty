@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <boost/container/flat_map.hpp>
 
 #include "CLucene/analysis/ik/core/CharacterUtil.h"
 #include "Hit.hpp"
@@ -73,7 +74,7 @@ private:
     size_t store_size_ {0};                         // 子节点数量
 
     std::vector<std::unique_ptr<DictSegment>> children_array_;
-    std::unordered_map<int32_t, std::unique_ptr<DictSegment>> children_map_;
+    boost::container::flat_map<int32_t, std::unique_ptr<DictSegment>> children_map_;
     std::unique_ptr<HybridMap> hybrid_map_;
 
     DictSegment* lookforSegment(int32_t key_char, bool create_if_missing);

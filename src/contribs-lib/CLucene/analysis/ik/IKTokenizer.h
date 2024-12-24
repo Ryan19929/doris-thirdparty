@@ -7,9 +7,26 @@
 #include "CLucene/analysis/AnalysisHeader.h"
 #include "CLucene/analysis/LanguageBasedAnalyzer.h"
 #include "CLucene/analysis/ik/cfg/Configuration.h"
+#include "CLucene/analysis/ik/core/IKSegmenter.h"
 
 CL_NS_DEF2(analysis, ik)
 CL_NS_USE(analysis)
+
+class IKSegmenterSingleton {
+public:
+    static IKSegmenter& getInstance(lucene::util::Reader* reader = nullptr,
+                                    std::shared_ptr<Configuration> config = nullptr) {
+        static IKSegmenter instance(reader, config);
+        if (reader != nullptr) {
+            instance.reset(reader,config);
+        }
+
+        return instance;
+    }
+
+private:
+    IKSegmenterSingleton() = default;
+};
 
 class IKTokenizer : public lucene::analysis::Tokenizer {
 private:
@@ -20,6 +37,10 @@ private:
     std::shared_ptr<Configuration> config_;
 
 public:
+    static void init(std::shared_ptr<Configuration> config) {
+        IKSegmenterSingleton::getInstance(nullptr, config);
+    }
+
     explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config);
     explicit IKTokenizer(lucene::util::Reader* reader, std::shared_ptr<Configuration> config,
                          bool is_smart, bool use_lowercase, bool own_reader = false);

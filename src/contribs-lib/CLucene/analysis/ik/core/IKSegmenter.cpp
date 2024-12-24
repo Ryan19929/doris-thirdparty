@@ -25,7 +25,7 @@ std::optional<Lexeme> IKSegmenter::next() {
     while (!(lexeme = context_->getNextLexeme())) {
         int available = context_->fillBuffer(input_);
         if (available <= 0) {
-            context_.reset();
+            context_->reset();
             return std::nullopt;
         } else {
             context_->initCursor();
@@ -48,9 +48,10 @@ std::optional<Lexeme> IKSegmenter::next() {
     return lexeme;
 }
 
-void IKSegmenter::reset(lucene::util::Reader* newInput) {
+void IKSegmenter::reset(lucene::util::Reader* newInput, std::shared_ptr<Configuration> config) {
     input_ = newInput;
-    context_.reset();
+    config_ = config;
+    context_->reset();
     for (const auto& segmenter : segmenters_) {
         segmenter->reset();
     }

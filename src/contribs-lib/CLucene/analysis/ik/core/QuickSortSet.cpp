@@ -120,9 +120,10 @@ const Lexeme* QuickSortSet::peekFirst() const {
 
 std::optional<Lexeme> QuickSortSet::pollFirst() {
     if (!head_) return std::nullopt;
-    Cell* old_head = head_;
-    Lexeme result = std::move(old_head->getLexeme());
 
+    std::optional<Lexeme> result(std::move(head_->lexeme_));
+
+    Cell* old_head = head_;
     head_ = head_->next_;
     if (head_)
         head_->prev_ = nullptr;
@@ -140,8 +141,8 @@ const Lexeme* QuickSortSet::peekLast() const {
 
 std::optional<Lexeme> QuickSortSet::pollLast() {
     if (!tail_) return std::nullopt;
+    std::optional<Lexeme> result(std::move(tail_->lexeme_));
     Cell* old_tail = tail_;
-    Lexeme result = std::move(old_tail->getLexeme());
 
     tail_ = tail_->prev_;
     if (tail_)

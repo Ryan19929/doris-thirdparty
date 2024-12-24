@@ -43,7 +43,8 @@ void IKTokenizer::reset(Reader* reader) {
     this->tokens_text_.clear();
 
     buffer_.reserve(input->size());
-    IKSegmenter segmenter(reader, config_);
+
+    auto& segmenter = IKSegmenterSingleton::getInstance(reader, config_);
 
     std::optional<Lexeme> lexeme;
     while (lexeme = segmenter.next()) {

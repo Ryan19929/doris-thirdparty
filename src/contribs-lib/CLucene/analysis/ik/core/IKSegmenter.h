@@ -17,7 +17,7 @@ class IKSegmenter {
 public:
     IKSegmenter(lucene::util::Reader* input, std::shared_ptr<Configuration> config);
     std::optional<Lexeme> next();
-    void reset(lucene::util::Reader* newInput);
+    void reset(lucene::util::Reader* newInput, std::shared_ptr<Configuration> config);
     int getLastUselessCharNum();
 
 private:

@@ -180,7 +180,6 @@ std::optional<Lexeme> AnalyzeContext::getNextLexeme() {
 }
 
 void AnalyzeContext::outputToResult() {
-    size_t estimated_size = path_map_.size() * 2; // 估计大小
     for (size_t index = 0; index <= cursor_;) {
         if (typed_runes_[index].char_type == CharacterUtil::CHAR_USELESS) {
             index++;
@@ -207,7 +206,7 @@ void AnalyzeContext::outputToResult() {
             index++;
         }
     }
-    path_map_.clear();
+    IKUnorderedMap<size_t, std::unique_ptr<LexemePath>>().swap(path_map_);
 }
 
 void AnalyzeContext::outputSingleCJK(size_t index) {

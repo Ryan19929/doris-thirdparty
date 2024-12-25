@@ -69,7 +69,6 @@ IKStack<QuickSortSet::Cell*> IKArbitrator::forwardPath(QuickSortSet::Cell* lexem
 
     while (current_cell) {
         if (!path_option->addNotCrossLexeme(current_cell->getLexeme())) {
-            // Lexeme intersection, if addition fails, push to lexemeStack
             conflictStack.push(current_cell);
         }
         current_cell = current_cell->getNext();

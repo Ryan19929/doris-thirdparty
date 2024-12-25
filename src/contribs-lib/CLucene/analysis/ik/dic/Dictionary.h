@@ -20,7 +20,7 @@ CL_NS_USE(analysis)
 
 class Dictionary {
 private:
-    static Dictionary* singleton_; // 使用原始指针
+    static Dictionary* singleton_;
     static std::once_flag init_flag_;
     // Dictionary segment mappings
     std::unique_ptr<DictSegment> main_dict_;
@@ -37,7 +37,7 @@ private:
             }
         }
     };
-    static Cleanup cleanup_; // 静态清理对象
+    static Cleanup cleanup_;
 
     // Dictionary paths
     static const std::string PATH_DIC_MAIN;
@@ -63,9 +63,7 @@ public:
             singleton_ = nullptr;
         }
     }
-    ~Dictionary() {
-        // unique_ptr 会自动清理其他成员
-    }
+    ~Dictionary() {}
 
     static void initial(const Configuration& cfg, bool useExtDict = false) {
         getSingleton(cfg, useExtDict);

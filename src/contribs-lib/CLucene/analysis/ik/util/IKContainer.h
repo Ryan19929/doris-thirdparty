@@ -10,37 +10,35 @@
 
 CL_NS_DEF2(analysis, ik)
 
-// 为标准容器定义使用 IKAllocator 的别名
+// Define a vector type that uses the custom IKAllocator for memory management
 template <typename T>
-using IKVector = std::vector<T, IKAllocator<T>>; // Vector with IK memory pool
+using IKVector = std::vector<T, IKAllocator<T>>;
 
+// Define a deque type that uses the custom IKAllocator for memory management
 template <typename T>
-using IKDeque = std::deque<T, IKAllocator<T>>; // Double-ended queue with IK memory pool
+using IKDeque = std::deque<T, IKAllocator<T>>;
 
+// A stack implementation that uses a custom allocator and supports dynamic resizing
 template <typename T, size_t InitialSize = 32>
 class IKStack {
 private:
-    T* data_;                        // 动态数组
-    size_t capacity_;                // 当前容量
-    size_t size_;                    // 当前大小
-    T initial_storage_[InitialSize]; // 初始固定大小存储
+    T* data_;                        // Pointer to the stack's data
+    size_t capacity_;                // Current capacity of the stack
+    size_t size_;                    // Current size of the stack
+    T initial_storage_[InitialSize]; // Initial storage for small stacks
 
 public:
-    IKStack() : size_(0), capacity_(InitialSize) {
-        // 开始时使用固定大小数组
-        data_ = initial_storage_;
-    }
+    // Constructor initializes the stack with the initial storage
+    IKStack() : size_(0), capacity_(InitialSize) { data_ = initial_storage_; }
 
-    // 添加移动构造函数
+    // Move constructor for transferring ownership of resources
     IKStack(IKStack&& other) noexcept : size_(other.size_), capacity_(other.capacity_) {
         if (other.data_ == other.initial_storage_) {
-            // 如果other使用的是初始存储，我们需要复制数据
             data_ = initial_storage_;
             for (size_t i = 0; i < size_; ++i) {
                 initial_storage_[i] = other.initial_storage_[i];
             }
         } else {
-            // 如果other使用的是堆内存，我们可以直接移动指针
             data_ = other.data_;
             other.data_ = other.initial_storage_;
         }
@@ -48,11 +46,11 @@ public:
         other.capacity_ = InitialSize;
     }
 
-    // 添加移动赋值运算符
+    // Move assignment operator for transferring ownership of resources
     IKStack& operator=(IKStack&& other) noexcept {
         if (this != &other) {
             if (data_ != initial_storage_) {
-                delete[] data_;
+                delete[] data_; // Free previously allocated memory
             }
 
             size_ = other.size_;
@@ -74,99 +72,105 @@ public:
         return *this;
     }
 
-    // 保持拷贝构造和拷贝赋值被禁用
+    // Deleted copy constructor and copy assignment operator to prevent copying
     IKStack(const IKStack&) = delete;
     IKStack& operator=(const IKStack&) = delete;
 
+    // Destructor to free allocated memory
     ~IKStack() {
-        // 只有在使用堆内存时才需要释放
         if (data_ != initial_storage_) {
             delete[] data_;
         }
     }
 
+    // Push a new element onto the stack
     void push(const T& value) {
         if (size_ >= capacity_) {
-            grow();
+            grow(); // Increase capacity if needed
         }
         data_[size_++] = value;
     }
 
+    // Get the top element of the stack
     T top() const {
         assert(size_ > 0 && "Stack is empty");
         return data_[size_ - 1];
     }
 
+    // Remove the top element from the stack
     void pop() {
         if (size_ > 0) {
             --size_;
-            // 可选：当size显著小于capacity时，考虑收缩
             if (size_ < capacity_ / 4 && capacity_ > InitialSize) {
-                shrink();
+                shrink(); // Reduce capacity if needed
             }
         }
     }
 
+    // Check if the stack is empty
     bool empty() const { return size_ == 0; }
 
+    // Get the current size of the stack
     size_t size() const { return size_; }
 
 private:
+    // Increase the capacity of the stack
     void grow() {
-        size_t new_capacity = capacity_ * 2;
-        T* new_data = new T[new_capacity];
+        size_t new_capacity = capacity_ * 2; // Double the capacity
+        T* new_data = new T[new_capacity];   // Allocate new memory
 
-        // 复制现有数据
         for (size_t i = 0; i < size_; ++i) {
-            new_data[i] = data_[i];
+            new_data[i] = data_[i]; // Copy existing elements
         }
 
-        // 如果之前使用的是堆内存，释放它
         if (data_ != initial_storage_) {
-            delete[] data_;
+            delete[] data_; // Free old memory if it was dynamically allocated
         }
 
-        data_ = new_data;
-        capacity_ = new_capacity;
+        data_ = new_data;         // Update data pointer
+        capacity_ = new_capacity; // Update capacity
     }
 
+    // Reduce the capacity of the stack
     void shrink() {
-        size_t new_capacity = capacity_ / 2;
+        size_t new_capacity = capacity_ / 2; // Halve the capacity
         if (new_capacity < InitialSize) {
-            // 如果新容量小于初始容量，回到使用固定数组
             if (data_ != initial_storage_) {
                 for (size_t i = 0; i < size_; ++i) {
-                    initial_storage_[i] = data_[i];
+                    initial_storage_[i] = data_[i]; // Move data to initial storage
                 }
-                delete[] data_;
-                data_ = initial_storage_;
-                capacity_ = InitialSize;
+                delete[] data_;           // Free old memory
+                data_ = initial_storage_; // Reset to initial storage
+                capacity_ = InitialSize;  // Reset capacity
             }
         } else {
-            // 分配新的更小的空间
-            T* new_data = new T[new_capacity];
+            T* new_data = new T[new_capacity]; // Allocate new memory
             for (size_t i = 0; i < size_; ++i) {
-                new_data[i] = data_[i];
+                new_data[i] = data_[i]; // Copy existing elements
             }
             if (data_ != initial_storage_) {
-                delete[] data_;
+                delete[] data_; // Free old memory
             }
-            data_ = new_data;
-            capacity_ = new_capacity;
+            data_ = new_data;         // Update data pointer
+            capacity_ = new_capacity; // Update capacity
         }
     }
 };
 
+// Define a map type that uses the custom IKAllocator for memory management
 template <typename K, typename V, typename Compare = std::less<K>>
 using IKMap = std::map<K, V, Compare, IKAllocator<std::pair<const K, V>>>;
 
+// Define an unordered map type that uses the custom IKAllocator for memory management
 template <typename K, typename V, typename Hash = std::hash<K>>
 using IKUnorderedMap =
         std::unordered_map<K, V, Hash, std::equal_to<K>, IKAllocator<std::pair<const K, V>>>;
 
+// Define a set type that uses the custom IKAllocator for memory management
 template <typename T, typename Compare = std::less<T>>
 using IKSet = std::set<T, Compare, IKAllocator<T>>;
 
+// Define a list type that uses the custom IKAllocator for memory management
 template <typename T>
 using IKList = std::list<T, IKAllocator<T>>;
 

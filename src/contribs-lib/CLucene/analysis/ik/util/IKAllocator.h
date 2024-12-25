@@ -8,6 +8,7 @@
 
 CL_NS_DEF2(analysis, ik)
 
+// Custom memory allocator that manages memory in blocks for improved performance
 template <typename T, size_t BlockSize = 16>
 class IKAllocator {
 public:
@@ -19,124 +20,139 @@ public:
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
+    // Rebind allocator to another type
     template <typename U>
     struct rebind {
         typedef IKAllocator<U, BlockSize> other;
     };
 
 private:
-    // Node structure with alignment
+    // Node structure for linked list of free nodes
     struct alignas(std::max_align_t) Node {
-        alignas(T) char data[sizeof(T)];
-        Node* next;
+        alignas(T) char data[sizeof(T)]; // Storage for the object
+        Node* next;                      // Pointer to the next free node
     };
-    // Pre-allocated memory pool
+
+    // Pre-allocated memory pool size
     static constexpr size_t POOL_SIZE = BlockSize * 4;
-    alignas(Node) char initial_pool_[sizeof(Node) * POOL_SIZE];
-    bool initialized_ = false;
+    alignas(Node) char initial_pool_[sizeof(Node) * POOL_SIZE]; // Initial memory pool
+    bool initialized_ = false; // Flag to check if the pool is initialized
 
-    Node* free_list_head_;
-
-    std::vector<Node*> blocks_;
+    Node* free_list_head_;      // Head of the free list
+    std::vector<Node*> blocks_; // Vector to keep track of allocated blocks
 
 public:
+    // Constructor initializes the allocator and the memory pool
     IKAllocator() : free_list_head_(nullptr) {
         blocks_.reserve(64);
         initializePool();
     }
 
+    // Copy constructor
     IKAllocator(const IKAllocator&) : free_list_head_(nullptr) { initializePool(); }
 
+    // Template copy constructor for different types
     template <typename U>
     IKAllocator(const IKAllocator<U, BlockSize>&) : free_list_head_(nullptr) {
         initializePool();
     }
 
+    // Destructor to free allocated memory blocks
     ~IKAllocator() {
-        // 清理所有分配的块
         for (Node* block : blocks_) {
             if (block >= reinterpret_cast<Node*>(initial_pool_) &&
                 block < reinterpret_cast<Node*>(initial_pool_ + sizeof(initial_pool_))) {
-                continue; // 跳过初始池的内存
+                continue; // Skip the initial pool memory
             }
-            ::operator delete(block);
+            ::operator delete(block); // Free the allocated block
         }
     }
 
 private:
+    // Initialize the memory pool with free nodes
     void initializePool() {
         if (initialized_) return;
 
         Node* nodes = reinterpret_cast<Node*>(initial_pool_);
-        // 初始化预分配池中的节点
         for (size_t i = 0; i < POOL_SIZE - 1; ++i) {
-            nodes[i].next = &nodes[i + 1];
+            nodes[i].next = &nodes[i + 1]; // Link nodes together
         }
-        nodes[POOL_SIZE - 1].next = nullptr;
-        free_list_head_ = nodes;
+        nodes[POOL_SIZE - 1].next = nullptr; // Last node points to null
+        free_list_head_ = nodes;             // Set the head of the free list
 
-        blocks_.push_back(nodes);
-        initialized_ = true;
+        blocks_.push_back(nodes); // Add the initial pool to the blocks
+        initialized_ = true;      // Mark the pool as initialized
     }
 
+    // Allocate a new block of memory
     Node* allocateBlock() {
         Node* block = static_cast<Node*>(::operator new(sizeof(Node) * BlockSize));
-        blocks_.push_back(block);
+        blocks_.push_back(block); // Keep track of the allocated block
 
         for (size_t i = 0; i < BlockSize - 1; ++i) {
-            block[i].next = &block[i + 1];
+            block[i].next = &block[i + 1]; // Link nodes in the new block
         }
-        block[BlockSize - 1].next = nullptr;
+        block[BlockSize - 1].next = nullptr; // Last node points to null
 
-        return block;
+        return block; // Return the new block
     }
 
 public:
+    // Allocate memory for n objects of type T
     pointer allocate(size_type n) {
         if (n != 1) {
-            return static_cast<pointer>(::operator new(n * sizeof(T)));
+            return static_cast<pointer>(::operator new(
+                    n * sizeof(T))); // Use default allocation for more than one object
         }
 
         if (!free_list_head_) {
             try {
-                free_list_head_ = allocateBlock();
+                free_list_head_ = allocateBlock(); // Allocate a new block if free list is empty
             } catch (const std::bad_alloc& e) {
-                return static_cast<pointer>(::operator new(sizeof(T)));
+                return static_cast<pointer>(
+                        ::operator new(sizeof(T))); // Fallback to default allocation
             }
         }
 
-        Node* result = free_list_head_;
-        free_list_head_ = free_list_head_->next;
-        return reinterpret_cast<pointer>(&result->data);
+        Node* result = free_list_head_;                  // Get the head of the free list
+        free_list_head_ = free_list_head_->next;         // Move the head to the next free node
+        return reinterpret_cast<pointer>(&result->data); // Return the memory for the object
     }
 
+    // Deallocate memory for a single object
     void deallocate(pointer p, size_type n) {
-        if (!p) return;
+        if (!p) return; // Do nothing if pointer is null
         if (n != 1) {
-            ::operator delete(p);
+            ::operator delete(p); // Use default deallocation for more than one object
             return;
         }
 
-        Node* node = reinterpret_cast<Node*>(reinterpret_cast<char*>(p) - offsetof(Node, data));
-        node->next = free_list_head_;
-        free_list_head_ = node;
+        Node* node = reinterpret_cast<Node*>(reinterpret_cast<char*>(p) -
+                                             offsetof(Node, data)); // Get the node from the pointer
+        node->next = free_list_head_; // Link the node back to the free list
+        free_list_head_ = node;       // Update the head of the free list
     }
 
+    // Construct an object in allocated memory
     template <typename U, typename... Args>
     void construct(U* p, Args&&... args) {
-        new (p) U(std::forward<Args>(args)...);
+        new (p) U(std::forward<Args>(args)...); // Placement new to construct the object
     }
 
+    // Destroy an object in allocated memory
     template <typename U>
     void destroy(U* p) {
-        p->~U();
+        p->~U(); // Call the destructor
     }
 
+    // Comparison operators for allocator
     bool operator==(const IKAllocator&) const { return true; }
     bool operator!=(const IKAllocator&) const { return false; }
 
+    // Return the maximum size of allocatable memory
     size_t max_size() const noexcept { return std::numeric_limits<size_type>::max() / sizeof(T); }
 
+    // Return the count of allocated blocks
     size_t get_allocated_block_count() const { return blocks_.size(); }
 };
 

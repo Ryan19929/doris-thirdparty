@@ -76,7 +76,7 @@ void DictSegment::fillSegment(const char* text) {
     if (!cleanText.empty() && static_cast<unsigned char>(cleanText[0]) == 0xEF &&
         static_cast<unsigned char>(cleanText[1]) == 0xBB &&
         static_cast<unsigned char>(cleanText[2]) == 0xBF) {
-        cleanText.erase(0, 3); // 移除 UTF-8 BOM
+        cleanText.erase(0, 3);
     }
     if (!cleanText.empty() && cleanText.back() == '\r') {
         cleanText.pop_back();

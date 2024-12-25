@@ -4,7 +4,7 @@ CL_NS_USE2(analysis, ik)
 const std::string CN_QuantifierSegmenter::SEGMENTER_NAME = "QUAN_SEGMENTER";
 const std::u32string CN_QuantifierSegmenter::CHINESE_NUMBERS =
         U"一二两三四五六七八九十零壹贰叁肆伍陆柒捌玖拾百千万亿拾佰仟萬億兆卅廿";
-static constexpr size_t UNICODE_MAX = 0x10000; // 对于常见中文字符够用了
+static constexpr size_t UNICODE_MAX = 0x10000;
 static std::vector<bool> chinese_number_chars_table_;
 
 CN_QuantifierSegmenter::CN_QuantifierSegmenter() {
@@ -12,7 +12,6 @@ CN_QuantifierSegmenter::CN_QuantifierSegmenter() {
     number_end_ = -1;
     count_hits_.clear();
 
-    // 只需要初始化一次
     if (chinese_number_chars_table_.empty()) {
         chinese_number_chars_table_.resize(UNICODE_MAX, false);
         for (auto ch : CHINESE_NUMBERS) {

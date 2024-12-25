@@ -3,11 +3,11 @@ CL_NS_USE2(analysis, ik)
 
 IKSegmenter::IKSegmenter(lucene::util::Reader* input, std::shared_ptr<Configuration> config)
         : input_(input), config_(config) {
-    context_ = std::make_shared<AnalyzeContext>(config);
     init();
 }
 
 void IKSegmenter::init() {
+    context_ = std::make_shared<AnalyzeContext>(config_);
     segmenters_ = loadSegmenters();
     arbitrator_ = IKArbitrator();
 }

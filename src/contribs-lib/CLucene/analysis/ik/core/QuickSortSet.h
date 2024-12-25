@@ -40,16 +40,6 @@ protected:
     Cell* tail_ = nullptr;
     size_t cell_size_ = 0;
 
-    static constexpr size_t POOL_SIZE = 1024; // 池大小，可以根据需要调整
-    static Cell* free_list_;                  // 空闲Cell链表
-    static Cell pool_[POOL_SIZE];             // 预分配的Cell池
-    static bool pool_initialized_;            // 池初始化标志
-
-    // 内存分配相关方法
-    static void initPool();
-    static Cell* allocateCell();
-    static void deallocateCell(Cell* cell);
-
 public:
     QuickSortSet() = default;
     virtual ~QuickSortSet();

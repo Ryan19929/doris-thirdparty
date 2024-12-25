@@ -2,7 +2,6 @@
 #include <memory>
 #include <sstream>
 
-#include "CLucene/analysis/ik/dic/Dictionary.h"
 #include "CLucene/analysis/ik/core/Lexeme.h"
 #include "CLucene/analysis/ik/core/CharacterUtil.h"
 #include "CLucene/analysis/ik/core/AnalyzeContext.h"
@@ -1332,7 +1331,6 @@ void testIKMaxWordModeTokenizer(CuTest* tc) {
     TokenStream* ts;
     Token t;
 
-    // 测试 IK 分词
     a.setLanguage(_T("ik"));
     a.setStem(false);
     a.setMode(AnalyzerMode::IK_Max_Word);
@@ -1530,12 +1528,10 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname, bool printResult) {
         CuMessageA(tc, "File does not exist: %s\n", fname);
         return;
     }
-    // 获取文件大小
     struct fileStat buf;
     fileStat(fname, &buf);
     int64_t bytes = buf.st_size;
 
-    // 使用 vector<char> 来存储文件内容
     std::vector<char> fileContent(bytes);
     {
         FILE* f = fopen(fname, "rb");
@@ -1549,20 +1545,16 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname, bool printResult) {
 
     CuMessageA(tc, "Reading test file containing %d bytes.\n", bytes);
 
-    // 使用 SStringReader 读取文件内容
     auto stringReader = std::make_unique<lucene::util::SStringReader<char>>(
             fileContent.data(), fileContent.size(), false);
 
-    // 初始化分词器
     auto analyzer = std::make_unique<lucene::analysis::LanguageBasedAnalyzer>();
     analyzer->setLanguage(L"ik");
     analyzer->setMode(AnalyzerMode::IK_Smart);
     analyzer->initDict("./ik-dict");
     analyzer->setStem(false);
-    // 记录开始时间
     uint64_t start = Misc::currentTimeMillis();
 
-    // 执行分词
     TokenStream* ts = analyzer->tokenStream(_T("contents"), stringReader.get());
     Token t;
     int32_t count = 0;
@@ -1571,11 +1563,9 @@ void testIKMatchHugeFromFile(CuTest* tc, const char* fname, bool printResult) {
         count++;
     }
 
-    // 记录结束时间
     uint64_t end = Misc::currentTimeMillis();
     int64_t time = end - start;
 
-    // 只在需要时输出统计信息
     if (printResult) {
         CuMessageA(tc, "分词耗时: %d 毫秒\n", time);
         CuMessageA(tc, "分词数量: %d\n", count);
@@ -1604,24 +1594,24 @@ void testFileIK(CuTest* tc) {
 
 CuSuite* testik(void) {
     CuSuite* suite = CuSuiteNew(_T("CLucene IK Test"));
-    //
-    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
-    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
-    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
-    //    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
-    //
-    //    SUITE_ADD_TEST(suite, testCharacterUtil);
-    //    SUITE_ADD_TEST(suite, testCJKSegmenter);
-    //    SUITE_ADD_TEST(suite, testLetterSegmenter);
-    //    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
-    //    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
-    //    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
-    //
-    //    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
-    //    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
-    //    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
-    //    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
-    //    SUITE_ADD_TEST(suite, testIKRareCharacters);
+
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer2);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer3);
+    SUITE_ADD_TEST(suite, testSimpleIKTokenizer4);
+
+    SUITE_ADD_TEST(suite, testCharacterUtil);
+    SUITE_ADD_TEST(suite, testCJKSegmenter);
+    SUITE_ADD_TEST(suite, testLetterSegmenter);
+    SUITE_ADD_TEST(suite, testCNQuantifierSegmenter);
+    SUITE_ADD_TEST(suite, testIKSmartModeTokenizer);
+    SUITE_ADD_TEST(suite, testIKMaxWordModeTokenizer);
+
+    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer);
+    SUITE_ADD_TEST(suite, testSimpleIKMaxWordModeTokenizer2);
+    SUITE_ADD_TEST(suite, testSimpleIKSmartModeTokenizer2);
+    SUITE_ADD_TEST(suite, testIKRareCharacters);
 
     //    SUITE_ADD_TEST(suite, testIKMatch);
     //    SUITE_ADD_TEST(suite, testIKMatch2);

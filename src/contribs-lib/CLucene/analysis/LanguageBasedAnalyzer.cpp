@@ -36,12 +36,8 @@ LanguageBasedAnalyzer::LanguageBasedAnalyzer(const TCHAR *language, bool stem, A
     this->stem = stem;
     this->mode = mode;
     Analyzer::_lowercase = false;
-
-    // 如果是ik分词器，创建默认配置
-    if (_tcscmp(lang, _T("ik")) == 0) {
-        ikConfig = std::make_shared<CL_NS2(analysis,ik)::Configuration>();
-        ikConfig->setUseSmart(mode == AnalyzerMode::IK_Smart);
-    }
+    ikConfig = std::make_shared<CL_NS2(analysis,ik)::Configuration>();
+    ikConfig->setUseSmart(mode == AnalyzerMode::IK_Smart);
 }
 
 LanguageBasedAnalyzer::~LanguageBasedAnalyzer() {
@@ -173,7 +169,7 @@ TokenStream* LanguageBasedAnalyzer::tokenStream(const TCHAR* fieldName, Reader* 
 
 void LanguageBasedAnalyzer::setIKConfiguration(const CL_NS2(analysis,ik)::Configuration& cfg) {
     if (!ikConfig) {
-        ikConfig = std::make_unique<CL_NS2(analysis,ik)::Configuration>(cfg);
+        ikConfig = std::make_shared<CL_NS2(analysis,ik)::Configuration>(cfg);
     } else {
         *ikConfig = cfg;
     }

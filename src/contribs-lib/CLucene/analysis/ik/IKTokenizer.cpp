@@ -17,7 +17,7 @@ IKTokenizer::IKTokenizer(Reader* reader, std::shared_ptr<Configuration> config)
 
 IKTokenizer::IKTokenizer(Reader* reader, std::shared_ptr<Configuration> config, bool isSmart,
                          bool lowercase, bool ownReader)
-        : config_(config) {
+        : Tokenizer(reader), config_(config) {
     reset(reader);
     config_->setUseSmart(isSmart);
     config_->setEnableLowercase(lowercase);
@@ -44,7 +44,7 @@ void IKTokenizer::reset(Reader* reader) {
 
     buffer_.reserve(input->size());
 
-    auto& segmenter = IKSegmenterSingleton::getInstance(reader, config_);
+    IKSegmenter segmenter(reader, config_);
 
     std::optional<Lexeme> lexeme;
     while (lexeme = segmenter.next()) {
